@@ -6,13 +6,14 @@
  * @license BSD-3-Clause
  */
 
+#include "markup.h"
+
 #include <assert.h>
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 
-#include "markup.h"
 #include "log.h"
 #include "settings.h"
 #include "utils.h"
@@ -21,7 +22,7 @@
  * Convert all HTML special symbols to HTML entities.
  * @param str (nullable)
  */
-static char *markup_quote(char *str)
+static char* markup_quote(char* str)
 {
         ASSERT_OR_RET(str, NULL);
 
@@ -38,7 +39,7 @@ static char *markup_quote(char *str)
  * Convert all HTML special entities to their actual char.
  * @param str (nullable)
  */
-static char *markup_unquote(char *str)
+static char* markup_unquote(char* str)
 {
         ASSERT_OR_RET(str, NULL);
 
@@ -55,7 +56,7 @@ static char *markup_unquote(char *str)
  * Convert all HTML linebreak tags to a newline character
  * @param str (nullable)
  */
-static char *markup_br2nl(char *str)
+static char* markup_br2nl(char* str)
 {
         ASSERT_OR_RET(str, NULL);
 
@@ -65,70 +66,75 @@ static char *markup_br2nl(char *str)
         return str;
 }
 
-void markup_strip_a(char **str, char **urls)
+void markup_strip_a(char** str, char** urls)
 {
         assert(*str);
-        char *tag1 = NULL;
+        char* tag1 = NULL;
 
         if (urls)
                 *urls = NULL;
 
-        while ((tag1 = strstr(*str, "<a"))) {
+        while ((tag1 = strstr(*str, "<a")))
+        {
                 // use href=" as stated in the notification spec
-                char *href = strstr(tag1, "href=\"");
-                char *tag1_end = strstr(tag1, ">");
-                char *tag2 = strstr(tag1, "</a>");
+                char* href = strstr(tag1, "href=\"");
+                char* tag1_end = strstr(tag1, ">");
+                char* tag2 = strstr(tag1, "</a>");
 
                 // the tag is broken, ignore it
-                if (!tag1_end) {
+                if (!tag1_end)
+                {
                         LOG_W("Given link is broken: '%s'", tag1);
-                        string_replace_at(*str, tag1-*str, strlen(tag1), "");
+                        string_replace_at(*str, tag1 - *str, strlen(tag1), "");
                         break;
                 }
-                if (tag2 && tag2 < tag1_end) {
-                        int repl_len =  (tag2 - tag1) + strlen("</a>");
+                if (tag2 && tag2 < tag1_end)
+                {
+                        int repl_len = (tag2 - tag1) + strlen("</a>");
                         LOG_W("Given link is broken: '%.*s.'", repl_len, tag1);
-                        string_replace_at(*str, tag1-*str, repl_len, "");
+                        string_replace_at(*str, tag1 - *str, repl_len, "");
                         break;
                 }
 
                 // search contents of href attribute
-                char *plain_url = NULL;
-                if (href && href < tag1_end) {
-
+                char* plain_url = NULL;
+                if (href && href < tag1_end)
+                {
                         // shift href to the actual begin of the value
-                        href = href+6;
+                        href = href + 6;
 
-                        const char *quote = strstr(href, "\"");
-                        if (quote && quote < tag1_end) {
-                                plain_url = g_strndup(href, quote-href);
+                        const char* quote = strstr(href, "\"");
+                        if (quote && quote < tag1_end)
+                        {
+                                plain_url = g_strndup(href, quote - href);
                         }
                 }
 
                 // text between a tags
                 int text_len;
                 if (tag2)
-                        text_len = tag2 - (tag1_end+1);
+                        text_len = tag2 - (tag1_end + 1);
                 else
-                        text_len = strlen(tag1_end+1);
+                        text_len = strlen(tag1_end + 1);
 
-                char *text = g_strndup(tag1_end+1, text_len);
+                char* text = g_strndup(tag1_end + 1, text_len);
 
-                int repl_len = text_len + (tag1_end-tag1) + 1;
+                int repl_len = text_len + (tag1_end - tag1) + 1;
                 repl_len += tag2 ? strlen("</a>") : 0;
 
-                *str = string_replace_at(*str, tag1-*str, repl_len, text);
+                *str = string_replace_at(*str, tag1 - *str, repl_len, text);
 
                 // if there had been a href attribute,
                 // add it to the URLs
-                if (plain_url && urls) {
+                if (plain_url && urls)
+                {
                         text = string_replace_all("]", "", text);
                         text = string_replace_all("[", "", text);
 
                         // Prevent dmenu from splitting items
                         text = string_replace_all("\n", "\\n", text);
 
-                        char *url = g_strdup_printf("[%s] %s", text, plain_url);
+                        char* url = g_strdup_printf("[%s] %s", text, plain_url);
 
                         *urls = string_append(*urls, url, "\n");
                         g_free(url);
@@ -139,61 +145,71 @@ void markup_strip_a(char **str, char **urls)
         }
 }
 
-void markup_strip_img(char **str, char **urls)
+void markup_strip_img(char** str, char** urls)
 {
-        const char *start;
+        const char* start;
 
         if (urls)
                 *urls = NULL;
 
-        while ((start = strstr(*str, "<img"))) {
-                const char *end = strstr(start, ">");
+        while ((start = strstr(*str, "<img")))
+        {
+                const char* end = strstr(start, ">");
 
                 // the tag is broken, ignore it
-                if (!end) {
+                if (!end)
+                {
                         LOG_W("Given image is broken: '%s'", start);
-                        string_replace_at(*str, start-*str, strlen(start), "");
+                        string_replace_at(*str, start - *str, strlen(start), "");
                         break;
                 }
 
                 // use attribute=" as stated in the notification spec
-                const char *alt_s = strstr(start, "alt=\"");
-                const char *src_s = strstr(start, "src=\"");
+                const char* alt_s = strstr(start, "alt=\"");
+                const char* src_s = strstr(start, "src=\"");
 
                 char *text_alt = NULL, *text_src = NULL;
                 const char *src_e = NULL, *alt_e = NULL;
 
                 // Move pointer to the actual start and get end
-                if (alt_s) {
+                if (alt_s)
+                {
                         alt_s += strlen("alt=\"");
                         alt_e = strstr(alt_s, "\"");
                 }
-                if (src_s) {
+                if (src_s)
+                {
                         src_s += strlen("src=\"");
                         src_e = strstr(src_s, "\"");
                 }
 
                 /* check if alt and src attribute are given
                  * If both given, check the alignment of all pointers */
-                if (   alt_s && alt_e
-                    && src_s && src_e
-                    && (  (alt_s < src_s && alt_e < src_s-strlen("src=\"") && src_e < end)
-                        ||(src_s < alt_s && src_e < alt_s-strlen("alt=\"") && alt_e < end)) ) {
+                if (alt_s && alt_e && src_s && src_e &&
+                    ((alt_s < src_s && alt_e < src_s - strlen("src=\"") && src_e < end) ||
+                     (src_s < alt_s && src_e < alt_s - strlen("alt=\"") && alt_e < end)))
+                {
+                        text_alt = g_strndup(alt_s, alt_e - alt_s);
+                        text_src = g_strndup(src_s, src_e - src_s);
 
-                        text_alt = g_strndup(alt_s, alt_e-alt_s);
-                        text_src = g_strndup(src_s, src_e-src_s);
+                        /* check if single valid alt attribute is available */
+                }
+                else if (alt_s && alt_e && alt_e < end &&
+                         (!src_s || src_s < alt_s || alt_e < src_s - strlen("src=\"")))
+                {
+                        text_alt = g_strndup(alt_s, alt_e - alt_s);
 
-                /* check if single valid alt attribute is available */
-                } else if (alt_s && alt_e && alt_e < end && (!src_s || src_s < alt_s || alt_e < src_s - strlen("src=\""))) {
-                        text_alt = g_strndup(alt_s, alt_e-alt_s);
-
-                /* check if single valid src attribute is available */
-                } else if (src_s && src_e && src_e < end && (!alt_s || alt_s < src_s || src_e < alt_s - strlen("alt=\""))) {
-                        text_src = g_strndup(src_s, src_e-src_s);
-
-                } else {
-                         LOG_W("Given image argument is broken: '%.*s'",
-                               (int)(end-start), start);
+                        /* check if single valid src attribute is available */
+                }
+                else if (src_s && src_e && src_e < end &&
+                         (!alt_s || alt_s < src_s || src_e < alt_s - strlen("alt=\"")))
+                {
+                        text_src = g_strndup(src_s, src_e - src_s);
+                }
+                else
+                {
+                        LOG_W("Given image argument is broken: '%.*s'", (int)(end - start),
+                              start);
                 }
 
                 // replacement text for alt
@@ -202,18 +218,19 @@ void markup_strip_img(char **str, char **urls)
                 if (!text_alt)
                         text_alt = g_strdup("[image]");
 
-                *str = string_replace_at(*str, start-*str, repl_len, text_alt);
+                *str = string_replace_at(*str, start - *str, repl_len, text_alt);
 
                 // if there had been a href attribute,
                 // add it to the URLs
-                if (text_src && urls) {
+                if (text_src && urls)
+                {
                         text_alt = string_replace_all("]", "", text_alt);
                         text_alt = string_replace_all("[", "", text_alt);
 
                         // Prevent dmenu from splitting items
                         text_alt = string_replace_all("\n", "\\n", text_alt);
 
-                        char *url = g_strdup_printf("[%s] %s", text_alt, text_src);
+                        char* url = g_strdup_printf("[%s] %s", text_alt, text_src);
 
                         *urls = string_append(*urls, url, "\n");
                         g_free(url);
@@ -224,7 +241,7 @@ void markup_strip_img(char **str, char **urls)
         }
 }
 
-char *markup_strip(char *str)
+char* markup_strip(char* str)
 {
         ASSERT_OR_RET(str, NULL);
 
@@ -244,19 +261,21 @@ char *markup_strip(char *str)
  * @retval true if @p str is an entity
  * @retval false otherwise
  */
-static bool markup_is_entity(const char *str)
+static bool markup_is_entity(const char* str)
 {
         assert(str);
         assert(*str == '&');
 
-        char *end = strchr(str, ';');
+        char* end = strchr(str, ';');
         ASSERT_OR_RET(end, false);
 
         // Parse (hexa)decimal entities with the format &#1234; or &#xABC;
-        if (str[1] == '#') {
-                const char *cur = str + 2;
+        if (str[1] == '#')
+        {
+                const char* cur = str + 2;
 
-                if (*cur == 'x') {
+                if (*cur == 'x')
+                {
                         cur++;
 
                         // Reject &#x;
@@ -265,8 +284,9 @@ static bool markup_is_entity(const char *str)
 
                         while (isxdigit(*cur) && cur < end)
                                 cur++;
-                } else {
-
+                }
+                else
+                {
                         // Reject &#;
                         if (*cur == ';')
                                 return false;
@@ -276,9 +296,14 @@ static bool markup_is_entity(const char *str)
                 }
 
                 return (cur == end);
-        } else {
-                const char *supported_tags[] = {"&amp;", "&lt;", "&gt;", "&quot;", "&apos;"};
-                for (size_t i = 0; i < sizeof(supported_tags)/sizeof(*supported_tags); i++) {
+        }
+        else
+        {
+                const char* supported_tags[] = {"&amp;", "&lt;", "&gt;", "&quot;",
+                                                "&apos;"};
+                for (size_t i = 0; i < sizeof(supported_tags) / sizeof(*supported_tags);
+                     i++)
+                {
                         if (g_str_has_prefix(str, supported_tags[i]))
                                 return true;
                 }
@@ -292,17 +317,21 @@ static bool markup_is_entity(const char *str)
  *
  * @param str The string to be transformed
  */
-static char *markup_escape_unsupported(char *str)
+static char* markup_escape_unsupported(char* str)
 {
         ASSERT_OR_RET(str, NULL);
 
-        char *match = str;
-        while ((match = strchr(match, '&'))) {
-                if (!markup_is_entity(match)) {
+        char* match = str;
+        while ((match = strchr(match, '&')))
+        {
+                if (!markup_is_entity(match))
+                {
                         int pos = match - str;
                         str = string_replace_at(str, pos, 1, "&amp;");
                         match = str + pos + strlen("&amp;");
-                } else {
+                }
+                else
+                {
                         match++;
                 }
         }
@@ -310,32 +339,34 @@ static char *markup_escape_unsupported(char *str)
         return str;
 }
 
-char *markup_transform(char *str, enum markup_mode markup_mode)
+char* markup_transform(char* str, enum markup_mode markup_mode)
 {
         ASSERT_OR_RET(str, NULL);
 
-        switch (markup_mode) {
-        case MARKUP_NULL:
-                /* `assert(false)`, but with a meaningful error message */
-                assert(markup_mode != MARKUP_NULL);
-                break;
-        case MARKUP_NO:
-                str = markup_quote(str);
-                break;
-        case MARKUP_STRIP:
-                str = markup_br2nl(str);
-                str = markup_strip(str);
-                str = markup_quote(str);
-                break;
-        case MARKUP_FULL:
-                str = markup_escape_unsupported(str);
-                str = markup_br2nl(str);
-                markup_strip_a(&str, NULL);
-                markup_strip_img(&str, NULL);
-                break;
+        switch (markup_mode)
+        {
+                case MARKUP_NULL:
+                        /* `assert(false)`, but with a meaningful error message */
+                        assert(markup_mode != MARKUP_NULL);
+                        break;
+                case MARKUP_NO:
+                        str = markup_quote(str);
+                        break;
+                case MARKUP_STRIP:
+                        str = markup_br2nl(str);
+                        str = markup_strip(str);
+                        str = markup_quote(str);
+                        break;
+                case MARKUP_FULL:
+                        str = markup_escape_unsupported(str);
+                        str = markup_br2nl(str);
+                        markup_strip_a(&str, NULL);
+                        markup_strip_img(&str, NULL);
+                        break;
         }
 
-        if (settings.ignore_newline) {
+        if (settings.ignore_newline)
+        {
                 str = string_replace_all("\n", " ", str);
         }
 

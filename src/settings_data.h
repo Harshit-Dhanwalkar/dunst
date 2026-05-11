@@ -18,103 +18,105 @@
 #include "rules.h"
 #include "settings.h"
 
-struct string_to_enum_def {
-  const char *string;
-  const int enum_value;
+struct string_to_enum_def
+{
+        const char* string;
+        const int enum_value;
 };
 
-struct setting {
-  /**
-   * A string with the setting key as found in the config file.
-   */
-  char *name;
+struct setting
+{
+        /**
+         * A string with the setting key as found in the config file.
+         */
+        char* name;
 
-  /**
-   * A string with the ini section where the variable is allowed. This
-   * section should be part of the special_sections array.
-   *
-   * Example:
-   *        .section = "global",
-   */
-  char *section;
+        /**
+         * A string with the ini section where the variable is allowed. This
+         * section should be part of the special_sections array.
+         *
+         * Example:
+         *        .section = "global",
+         */
+        char* section;
 
-  /**
-   * A string with a short description of the config variable. This is
-   * currently not used, but it may be used to generate help messages.
-   */
-  char *description;
+        /**
+         * A string with a short description of the config variable. This is
+         * currently not used, but it may be used to generate help messages.
+         */
+        char* description;
 
-  // IDEA: Add long description to generate man page from this. This could
-  // also be useful for an extended help text.
+        // IDEA: Add long description to generate man page from this. This could
+        // also be useful for an extended help text.
 
-  /**
-   * Enum of the setting type. Every setting type is parsed differently in
-   * option_parser.c.
-   */
-  enum setting_type type;
+        /**
+         * Enum of the setting type. Every setting type is parsed differently in
+         * option_parser.c.
+         */
+        enum setting_type type;
 
-  /**
-   * A string with the default value of the setting. This should be the
-   * same as what it would be in the config file, as this is parsed by the
-   * same parser.
-   * default_value is unused when the setting is only a rule (value == NULL).
-   *
-   * Example:
-   *        .default_value = "10s", // 10 seconds of time
-   */
-  char *default_value;
+        /**
+         * A string with the default value of the setting. This should be the
+         * same as what it would be in the config file, as this is parsed by the
+         * same parser.
+         * default_value is unused when the setting is only a rule (value == NULL).
+         *
+         * Example:
+         *        .default_value = "10s", // 10 seconds of time
+         */
+        char* default_value;
 
-  /**
-   * (nullable)
-   * A pointer to the corresponding setting in the setting struct. Make
-   * sure to always take the address, even if it's already a pointer in the
-   * settings struct.
-   * If value is NULL, the setting is interpreted as a rule.
-   *
-   * Example:
-   *        .value = &settings.font,
-   */
-  void *value;
+        /**
+         * (nullable)
+         * A pointer to the corresponding setting in the setting struct. Make
+         * sure to always take the address, even if it's already a pointer in the
+         * settings struct.
+         * If value is NULL, the setting is interpreted as a rule.
+         *
+         * Example:
+         *        .value = &settings.font,
+         */
+        void* value;
 
-  /**
-   * (nullable)
-   * Function pointer for the parser - to be used in case of enums or other
-   * special settings. If the parse requires extra data, it should be given
-   * with parser_data. This allows for one generic parser for, for example,
-   * enums, instead of a parser for every enum.
-   *
-   * @param data The required data for parsing the value. See parser_data.
-   * @param cfg_value The string representing the value of the config
-   * variable
-   * @param ret A pointer to the return value. This casted by the parser to
-   * the right type.
-   */
-  int (*parser)(const void *data, const char *cfg_value, void *ret);
+        /**
+         * (nullable)
+         * Function pointer for the parser - to be used in case of enums or other
+         * special settings. If the parse requires extra data, it should be given
+         * with parser_data. This allows for one generic parser for, for example,
+         * enums, instead of a parser for every enum.
+         *
+         * @param data The required data for parsing the value. See parser_data.
+         * @param cfg_value The string representing the value of the config
+         * variable
+         * @param ret A pointer to the return value. This casted by the parser to
+         * the right type.
+         */
+        int (*parser)(const void* data, const char* cfg_value, void* ret);
 
-  /**
-   * (nullable)
-   * A pointer to the data required for the parser to parse this setting.
-   */
-  const void *parser_data; // This is passed to the parser function
+        /**
+         * (nullable)
+         * A pointer to the data required for the parser to parse this setting.
+         */
+        const void* parser_data;  // This is passed to the parser function
 
-  /**
-   * The offset of this setting in the rule struct, if it exists. Zero is
-   * being interpreted as if no rule exists for this setting.
-   *
-   * Example:
-   *        .rule_offset = offsetof(struct rule, *member*);
-   */
-  size_t rule_offset;
+        /**
+         * The offset of this setting in the rule struct, if it exists. Zero is
+         * being interpreted as if no rule exists for this setting.
+         *
+         * Example:
+         *        .rule_offset = offsetof(struct rule, *member*);
+         */
+        size_t rule_offset;
 
-  /**
-   * True if a setting has a different default in the default dunstrc.
-   * This is useful to transition a default value without breaking exisitng
-   * configs. This value is needed for the test suite to skip testing this
-   * setting against the default dunstrc.
-   *
-   * False by default.
-   */
-  bool different_default;
+        /**
+         * True if a setting has a different default in the default dunstrc.
+         * This is useful to transition a default value without breaking exisitng
+         * configs. This value is needed for the test suite to skip testing this
+         * setting against the default dunstrc.
+         *
+         * False by default.
+         */
+        bool different_default;
 };
 
 /*
@@ -184,35 +186,55 @@ static const struct rule empty_rule = {.name = "empty",
 #define ZWLR_LAYER_SHELL_V1_LAYER_ENUM
 // Needed for compiling without wayland dependency
 const enum zwlr_layer_shell_v1_layer {
-  ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND = 0,
-  ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM = 1,
-  ZWLR_LAYER_SHELL_V1_LAYER_TOP = 2,
-  ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY = 3,
+        ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND = 0,
+        ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM = 1,
+        ZWLR_LAYER_SHELL_V1_LAYER_TOP = 2,
+        ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY = 3,
 };
 #endif /* ZWLR_LAYER_SHELL_V1_LAYER_ENUM */
 
-enum list_type {
-  INVALID_LIST = 0,
-  MOUSE_LIST = 1,
-  OFFSET_LIST = 2,
-  STRING_LIST = 3,
+enum list_type
+{
+        INVALID_LIST = 0,
+        MOUSE_LIST = 1,
+        OFFSET_LIST = 2,
+        STRING_LIST = 3,
 };
 
 #define ENUM_END {NULL, 0}
 static const struct string_to_enum_def verbosity_enum_data[] = {
-    {"critical", G_LOG_LEVEL_CRITICAL}, {"crit", G_LOG_LEVEL_CRITICAL},
-    {"warning", G_LOG_LEVEL_WARNING},   {"warn", G_LOG_LEVEL_WARNING},
-    {"message", G_LOG_LEVEL_MESSAGE},   {"mesg", G_LOG_LEVEL_MESSAGE},
-    {"info", G_LOG_LEVEL_INFO},         {"debug", G_LOG_LEVEL_DEBUG},
-    {"deb", G_LOG_LEVEL_DEBUG},         ENUM_END,
+    {"critical", G_LOG_LEVEL_CRITICAL},
+    {"crit", G_LOG_LEVEL_CRITICAL},
+    {"warning", G_LOG_LEVEL_WARNING},
+    {"warn", G_LOG_LEVEL_WARNING},
+    {"message", G_LOG_LEVEL_MESSAGE},
+    {"mesg", G_LOG_LEVEL_MESSAGE},
+    {"info", G_LOG_LEVEL_INFO},
+    {"debug", G_LOG_LEVEL_DEBUG},
+    {"deb", G_LOG_LEVEL_DEBUG},
+    ENUM_END,
 };
 
 static const struct string_to_enum_def boolean_enum_data[] = {
-    {"True", true},   {"true", true}, {"On", true},   {"on", true},
-    {"Yes", true},    {"yes", true},  {"1", true},    {"False", false},
-    {"false", false}, {"Off", false}, {"off", false}, {"No", false},
-    {"no", false},    {"0", false},   {"n", false},   {"y", false},
-    {"N", false},     {"Y", true},    ENUM_END,
+    {"True", true},
+    {"true", true},
+    {"On", true},
+    {"on", true},
+    {"Yes", true},
+    {"yes", true},
+    {"1", true},
+    {"False", false},
+    {"false", false},
+    {"Off", false},
+    {"off", false},
+    {"No", false},
+    {"no", false},
+    {"0", false},
+    {"n", false},
+    {"y", false},
+    {"N", false},
+    {"Y", true},
+    ENUM_END,
 };
 
 static const struct string_to_enum_def sort_type_enum_data[] = {
@@ -263,8 +285,11 @@ static struct string_to_enum_def follow_mode_enum_data[] = {
 };
 
 static const struct string_to_enum_def fullscreen_enum_data[] = {
-    {"suppress", FS_SUPPRESS}, {"show", FS_SHOW}, {"delay", FS_DELAY},
-    {"pushback", FS_PUSHBACK}, ENUM_END,
+    {"suppress", FS_SUPPRESS},
+    {"show", FS_SHOW},
+    {"delay", FS_DELAY},
+    {"pushback", FS_PUSHBACK},
+    ENUM_END,
 };
 
 static const struct string_to_enum_def icon_position_enum_data[] = {
@@ -283,8 +308,11 @@ static const struct string_to_enum_def vertical_alignment_enum_data[] = {
 };
 
 static const struct string_to_enum_def markup_mode_enum_data[] = {
-    {"strip", MARKUP_STRIP}, {"no", MARKUP_NO}, {"full", MARKUP_FULL},
-    {"yes", MARKUP_FULL},    ENUM_END,
+    {"strip", MARKUP_STRIP},
+    {"no", MARKUP_NO},
+    {"full", MARKUP_FULL},
+    {"yes", MARKUP_FULL},
+    ENUM_END,
 };
 
 static const struct string_to_enum_def mouse_action_enum_data[] = {
@@ -387,7 +415,7 @@ static const struct setting allowed_settings[] = {
             "The name of the application as reported by the client. Be aware "
             "that the name can often differ depending on the locale used.",
         .type = TYPE_STRING,
-        .default_value = "*", // default_value is not used for rules
+        .default_value = "*",  // default_value is not used for rules
         .value = NULL,
         .parser = NULL,
         .parser_data = NULL,
@@ -1506,7 +1534,7 @@ static const struct setting allowed_settings[] = {
         .section = "urgency_low",
         .description = "Timeout for notifications with low urgency",
         .type = TYPE_TIME,
-        .default_value = "10", // in seconds
+        .default_value = "10",  // in seconds
         .value = &settings.timeouts[URG_LOW],
         .parser = NULL,
         .parser_data = NULL,

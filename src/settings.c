@@ -40,10 +40,11 @@ bool print_notifications = false;
  * @retval 1 if file name matches *.conf
  * @retval 0 otherwise
  */
-static int is_drop_in(const struct dirent *dent) {
+static int is_drop_in(const struct dirent* dent)
+{
         return 0 == fnmatch("*.conf", dent->d_name, FNM_PATHNAME | FNM_PERIOD)
-                    ? 1 // success
-                    : 0;
+                   ? 1  // success
+                   : 0;
 }
 
 /**
@@ -57,9 +58,11 @@ static int is_drop_in(const struct dirent *dent) {
  * The result @e must @e not be freed! The array is cached in a static variable,
  * so it is OK to call this again instead of caching its return value.
  */
-static GPtrArray *get_xdg_conf_basedirs(void) {
-        GPtrArray *arr = g_ptr_array_new_full(4, g_free);
-        g_ptr_array_add(arr, g_build_filename(g_get_user_config_dir(), "dunst", NULL));
+static GPtrArray* get_xdg_conf_basedirs(void)
+{
+        GPtrArray* arr = g_ptr_array_new_full(4, g_free);
+        g_ptr_array_add(arr,
+                        g_build_filename(g_get_user_config_dir(), "dunst", NULL));
 
         /**
          * @note
@@ -74,25 +77,29 @@ static GPtrArray *get_xdg_conf_basedirs(void) {
         return arr;
 }
 
-static void config_files_add_drop_ins(GPtrArray *config_files, const char *path) {
+static void config_files_add_drop_ins(GPtrArray* config_files,
+                                      const char* path)
+{
         int insert_index = config_files->len;
-        if (insert_index == 0) {
+        if (insert_index == 0)
+        {
                 // there is no base config file
                 return;
         }
-        char *drop_in_dir = g_strconcat(path, ".d", NULL);
-        struct dirent **drop_ins = NULL;
+        char* drop_in_dir = g_strconcat(path, ".d", NULL);
+        struct dirent** drop_ins = NULL;
         int n = scandir(drop_in_dir, &drop_ins, is_drop_in, alphasort);
 
-        if (n == -1) {
+        if (n == -1)
+        {
                 // Scandir error. Most likely the directory doesn't exist.
                 g_free(drop_in_dir);
                 return;
         }
 
-        while (n--) {
-                char *drop_in = g_strconcat(drop_in_dir, "/",
-                                drop_ins[n]->d_name, NULL);
+        while (n--)
+        {
+                char* drop_in = g_strconcat(drop_in_dir, "/", drop_ins[n]->d_name, NULL);
                 LOG_D("Found drop-in: %s\n", drop_in);
                 g_ptr_array_insert(config_files, insert_index, drop_in);
                 g_free(drop_ins[n]);
@@ -110,15 +117,18 @@ static void config_files_add_drop_ins(GPtrArray *config_files, const char *path)
  *
  * The returned GPtrArray and it's elements are owned by the caller.
  */
-static GPtrArray* get_conf_files(void) {
-        GPtrArray *config_locations = get_xdg_conf_basedirs();
-        GPtrArray *config_files = g_ptr_array_new_full(3, g_free);
-        char *dunstrc_location = NULL;
-        for (size_t i = 0; i < config_locations->len; i++) {
-                dunstrc_location = g_build_filename(config_locations->pdata[i],
-                                "dunstrc", NULL);
+static GPtrArray* get_conf_files(void)
+{
+        GPtrArray* config_locations = get_xdg_conf_basedirs();
+        GPtrArray* config_files = g_ptr_array_new_full(3, g_free);
+        char* dunstrc_location = NULL;
+        for (size_t i = 0; i < config_locations->len; i++)
+        {
+                dunstrc_location =
+                    g_build_filename(config_locations->pdata[i], "dunstrc", NULL);
                 LOG_D("Trying config location: %s", dunstrc_location);
-                if (is_readable_file(dunstrc_location)) {
+                if (is_readable_file(dunstrc_location))
+                {
                         g_ptr_array_add(config_files, dunstrc_location);
                         break;
                 }
@@ -130,10 +140,10 @@ static GPtrArray* get_conf_files(void) {
         return config_files;
 }
 
-FILE *fopen_conf(char * const path)
+FILE* fopen_conf(char* const path)
 {
-        FILE *f = NULL;
-        char *real_path = string_to_path(g_strdup(path));
+        FILE* f = NULL;
+        char* real_path = string_to_path(g_strdup(path));
 
         if (is_readable_file(real_path) && NULL != (f = fopen(real_path, "r")))
                 LOG_I(MSG_FOPEN_SUCCESS(path, f));
@@ -144,18 +154,21 @@ FILE *fopen_conf(char * const path)
         return f;
 }
 
-void check_and_correct_settings(struct settings *s) {
+void check_and_correct_settings(struct settings* s)
+{
         bool on_wayland = is_running_wayland();
 
 #ifndef ENABLE_WAYLAND
-        if (on_wayland) {
+        if (on_wayland)
+        {
                 /* We are using xwayland now. Setting force_xwayland to make sure
                  * the idle workaround below is activated */
                 settings.force_xwayland = true;
         }
 #endif
 
-        if (settings.force_xwayland && on_wayland) {
+        if (settings.force_xwayland && on_wayland)
+        {
                 if (settings.idle_threshold > 0)
                         LOG_W("Using xwayland. Disabling idle.");
                 /* There is no way to detect if the user is idle
@@ -165,48 +178,69 @@ void check_and_correct_settings(struct settings *s) {
 
         // check sanity of the progress bar options
         {
-                if (s->progress_bar_height < (2 * s->progress_bar_frame_width)) {
-                        DIE("setting progress_bar_frame_width is bigger than half of progress_bar_height");
+                if (s->progress_bar_height < (2 * s->progress_bar_frame_width))
+                {
+                        DIE("setting progress_bar_frame_width is bigger than half of "
+                            "progress_bar_height");
                 }
-                if (s->progress_bar_max_width < (2 * s->progress_bar_frame_width)) {
-                        DIE("setting progress_bar_frame_width is bigger than half of progress_bar_max_width");
+                if (s->progress_bar_max_width < (2 * s->progress_bar_frame_width))
+                {
+                        DIE("setting progress_bar_frame_width is bigger than half of "
+                            "progress_bar_max_width");
                 }
-                if (s->progress_bar_max_width < s->progress_bar_min_width) {
-                        DIE("setting progress_bar_max_width is smaller than progress_bar_min_width");
+                if (s->progress_bar_max_width < s->progress_bar_min_width)
+                {
+                        DIE("setting progress_bar_max_width is smaller than "
+                            "progress_bar_min_width");
                 }
-                if (s->progress_bar_min_width > s->width.max) {
-                        LOG_W("Progress bar min width is greater than the max width of the notification");
+                if (s->progress_bar_min_width > s->width.max)
+                {
+                        LOG_W(
+                            "Progress bar min width is greater than the max width of the "
+                            "notification");
                 }
                 int progress_bar_max_corner_radius = (s->progress_bar_height / 2);
-                if (s->progress_bar_corner_radius > progress_bar_max_corner_radius) {
+                if (s->progress_bar_corner_radius > progress_bar_max_corner_radius)
+                {
                         settings.progress_bar_corner_radius = progress_bar_max_corner_radius;
-                        LOG_W("Progress bar corner radius clamped to half of progress bar height (%i)",
-                                progress_bar_max_corner_radius);
+                        LOG_W(
+                            "Progress bar corner radius clamped to half of progress bar height "
+                            "(%i)",
+                            progress_bar_max_corner_radius);
                 }
         }
 
         // check lengths
-        if (s->width.min == INT_MIN) {
+        if (s->width.min == INT_MIN)
+        {
                 s->width.min = 0;
         }
-        if (s->width.min < 0 || s->width.max < 0) {
+        if (s->width.min < 0 || s->width.max < 0)
+        {
                 DIE("setting width does not support negative values");
         }
-        if (s->width.min > s->width.max) {
-                DIE("setting width min (%i) is always greather than max (%i)", s->width.min, s->width.max);
+        if (s->width.min > s->width.max)
+        {
+                DIE("setting width min (%i) is always greather than max (%i)", s->width.min,
+                    s->width.max);
         }
 
-        if (s->height.min == INT_MIN) {
+        if (s->height.min == INT_MIN)
+        {
                 s->height.min = 0;
         }
-        if (s->height.min < 0 || s->height.max < 0) {
+        if (s->height.min < 0 || s->height.max < 0)
+        {
                 DIE("setting height does not support negative values");
         }
-        if (s->height.min > s->height.max) {
-                DIE("setting height min (%i) is always greather than max (%i)", s->height.min, s->height.max);
+        if (s->height.min > s->height.max)
+        {
+                DIE("setting height min (%i) is always greather than max (%i)",
+                    s->height.min, s->height.max);
         }
 
-        if (s->offset.x == INT_MIN || s->offset.y == INT_MAX) {
+        if (s->offset.x == INT_MIN || s->offset.y == INT_MAX)
+        {
                 DIE("setting offset needs both horizontal and vertical values");
         }
 
@@ -220,34 +254,41 @@ void check_and_correct_settings(struct settings *s) {
         //         if (   s->max_icon_size == 0
         //             || s->max_icon_size > icon_size_limit) {
         //                 if (s->max_icon_size != 0) {
-        //                         LOG_W("Max width was set to %d but got a max_icon_size of %d, too large to use. Setting max_icon_size=%d",
-        //                                 s->width.max, s->max_icon_size, icon_size_limit);
+        //                         LOG_W("Max width was set to %d but got a
+        //                         max_icon_size of %d, too large to use. Setting
+        //                         max_icon_size=%d",
+        //                                 s->width.max, s->max_icon_size,
+        //                                 icon_size_limit);
         //                 } else {
-        //                         LOG_I("Max width was set but max_icon_size is unlimited. Limiting icons to %d pixels", icon_size_limit);
+        //                         LOG_I("Max width was set but max_icon_size is
+        //                         unlimited. Limiting icons to %d pixels",
+        //                         icon_size_limit);
         //                 }
 
         //                 s->max_icon_size = icon_size_limit;
         //         }
         // }
 
-        // int text_icon_padding = settings.text_icon_padding != 0 ? settings.text_icon_padding : settings.h_padding;
-        // int max_text_width = settings.width.max - settings.max_icon_size - text_icon_padding - 2 * settings.h_padding;
-        // if (max_text_width < 10) {
-        //         DIE("max_icon_size and horizontal padding are too large for the given width");
+        // int text_icon_padding = settings.text_icon_padding != 0 ?
+        // settings.text_icon_padding : settings.h_padding; int max_text_width =
+        // settings.width.max - settings.max_icon_size - text_icon_padding - 2 *
+        // settings.h_padding; if (max_text_width < 10) {
+        //         DIE("max_icon_size and horizontal padding are too large for the
+        //         given width");
         // }
-
 }
 
-static void process_conf_file(const gpointer conf_fname, gpointer n_success) {
-        const gchar * const p = conf_fname;
+static void process_conf_file(const gpointer conf_fname, gpointer n_success)
+{
+        const gchar* const p = conf_fname;
 
         LOG_D("Reading config file '%s'", p);
         /* Check for "-" here, so the file handling stays in one place */
-        FILE *f = STR_EQ(p, "-") ? stdin : fopen_verbose(p);
+        FILE* f = STR_EQ(p, "-") ? stdin : fopen_verbose(p);
         if (!f)
                 return;
 
-        struct ini *ini = load_ini_file(f);
+        struct ini* ini = load_ini_file(f);
         fclose(f);
 
         LOG_D("Loading settings");
@@ -259,23 +300,26 @@ static void process_conf_file(const gpointer conf_fname, gpointer n_success) {
         finish_ini(ini);
         g_free(ini);
 
-        ++(*(int *) n_success);
+        ++(*(int*)n_success);
 }
 
-void load_settings(char **const paths)
+void load_settings(char** const paths)
 {
         LOG_D("Setting defaults");
         set_defaults();
 
         guint length = g_strv_length(paths);
 
-        GPtrArray *conf_files;
+        GPtrArray* conf_files;
 
-        if (length != 0) {
+        if (length != 0)
+        {
                 conf_files = g_ptr_array_new_full(length, g_free);
                 for (int i = 0; paths[i]; i++)
                         g_ptr_array_add(conf_files, g_strdup(paths[i]));
-        } else {
+        }
+        else
+        {
                 // Use default locations (and search drop-ins)
                 conf_files = get_conf_files();
         }
@@ -290,7 +334,7 @@ void load_settings(char **const paths)
         g_ptr_array_unref(conf_files);
 }
 
-void settings_free(struct settings *s)
+void settings_free(struct settings* s)
 {
         gradient_release(s->colors_low.highlight);
         gradient_release(s->colors_norm.highlight);

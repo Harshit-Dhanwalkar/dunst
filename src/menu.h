@@ -20,21 +20,24 @@
  * @return a string of urls separated by '\n'
  * @retval NULL wehn no URLs were found
  */
-char *extract_urls(const char *to_match);
+char* extract_urls(const char* to_match);
 
-void open_browser(const char *in);
-void invoke_action(const char *action);
+void open_browser(const char* in);
+void invoke_action(const char* action);
 void regex_teardown(void);
 
 /**
- * Open the context menu that lets the user select urls/actions/etc for all displayed notifications.
+ * Open the context menu that lets the user select urls/actions/etc for all
+ * displayed notifications.
  */
 void context_menu(void);
 
 /**
- * Open the context menu that lets the user select urls/actions/etc for the specified notifications.
- * @param notifications (nullable) List of notifications for which the context menu should be opened
+ * Open the context menu that lets the user select urls/actions/etc for the
+ * specified notifications.
+ * @param notifications (nullable) List of notifications for which the context
+ * menu should be opened
  */
-void context_menu_for(GList *notifications);
+void context_menu_for(GList* notifications);
 
 #endif

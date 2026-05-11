@@ -2,7 +2,8 @@
 /**
  * @file
  * @ingroup notify
- * @brief DBus support and implementation of the Desktop Notifications Specification
+ * @brief DBus support and implementation of the Desktop Notifications
+ * Specification
  * @copyright Copyright 2011-2014 Sascha Kruse
  * @copyright Copyright 2014-2026 Dunst contributors
  * @license BSD-3-Clause
@@ -15,7 +16,8 @@
 #include "notification.h"
 
 /// The reasons according to the notification spec
-enum reason {
+enum reason
+{
         REASON_MIN = 1,   /**< Minimum value, useful for boundary checking */
         REASON_TIME = 1,  /**< The notification timed out */
         REASON_USER = 2,  /**< The user closed the notification */
@@ -26,12 +28,13 @@ enum reason {
 
 int dbus_init(void);
 void dbus_teardown(int id);
-void signal_notification_closed(struct notification *n, enum reason reason);
-void signal_action_invoked(const struct notification *n, const char *identifier);
+void signal_notification_closed(struct notification* n, enum reason reason);
+void signal_action_invoked(const struct notification* n,
+                           const char* identifier);
 void signal_length_propertieschanged(void);
 void signal_paused_propertieschanged(void);
 void signal_history_removed(guint id);
 void signal_history_cleared(guint n);
-void signal_config_reloaded(char **const configs);
+void signal_config_reloaded(char** const configs);
 
 #endif

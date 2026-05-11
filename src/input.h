@@ -21,6 +21,7 @@
  * @param mouse_y Y-position of the mouse, relative to the window
  *
  */
-void input_handle_click(unsigned int button, bool button_down, int mouse_x, int mouse_y);
+void input_handle_click(unsigned int button, bool button_down, int mouse_x,
+                        int mouse_y);
 
 #endif

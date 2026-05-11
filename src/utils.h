@@ -36,11 +36,15 @@
 
 /** Stringify the given expression or macro */
 #define STR_TO(...) _STR_TO(__VA_ARGS__)
-#define _STR_TO(...) "" # __VA_ARGS__
+#define _STR_TO(...) "" #__VA_ARGS__
 
 /** Assert that expr evaluates to true, if not return val */
-#define ASSERT_OR_RET(expr, val) \
-        do { if (!(expr)) return val; } while(0)
+#define ASSERT_OR_RET(expr, val)    \
+        do                          \
+        {                           \
+                if (!(expr))        \
+                        return val; \
+        } while (0)
 
 /** Convert seconds into microseconds */
 #define S2US(s) (((gint64)(s)) * G_USEC_PER_SEC)
@@ -54,9 +58,9 @@
  */
 #define BOOL2G(x) ((x) ? TRUE : FALSE)
 
-
 /**
- * Replaces all occurrences of the char @p needle with the char @p replacement in @p haystack.
+ * Replaces all occurrences of the char @p needle with the char @p replacement
+ * in @p haystack.
  *
  * Does not allocate a new string.
  *
@@ -66,7 +70,7 @@
  *
  * @return The exact value of the haystack paramater (to allow nesting)
  */
-char *string_replace_char(char needle, char replacement, char *haystack);
+char* string_replace_char(char needle, char replacement, char* haystack);
 
 /**
  * Replace a substring inside a string with another string.
@@ -78,7 +82,7 @@ char *string_replace_char(char needle, char replacement, char *haystack);
  * @param len The length of the substring to replace
  * @param repl The new contents of the substring.
  */
-char *string_replace_at(char *buf, int pos, int len, const char *repl);
+char* string_replace_at(char* buf, int pos, int len, const char* repl);
 
 /**
  * Replace all occurences of a substring.
@@ -87,16 +91,18 @@ char *string_replace_at(char *buf, int pos, int len, const char *repl);
  * @param replacement The substring to replace
  * @param haystack (nullable) The string to search the substring for
  */
-char *string_replace_all(const char *needle, const char *replacement, char *haystack);
+char* string_replace_all(const char* needle, const char* replacement,
+                         char* haystack);
 
 /**
- * Append @p b to string @p a, then concatenate both with @p sep (if they are non-empty).
+ * Append @p b to string @p a, then concatenate both with @p sep (if they are
+ * non-empty).
  *
  * @param a (nullable) The left side of the string
  * @param b (nullable) The right side of the string
  * @param sep (nullable) The concatenator to concatenate if a and b given
  */
-char *string_append(char *a, const char *b, const char *sep);
+char* string_append(char* a, const char* b, const char* sep);
 
 /**
  * Strip quotes from a string, ignoring inner quotes.
@@ -104,7 +110,7 @@ char *string_append(char *a, const char *b, const char *sep);
  * @param value The string to strip the quotes from
  * @return A copy of the string value with the outer quotes removed (if any)
  */
-char *string_strip_quotes(const char *value);
+char* string_strip_quotes(const char* value);
 
 /**
  * Strip content between two delimiter characters.
@@ -113,7 +119,7 @@ char *string_strip_quotes(const char *value);
  * @param a Starting delimiter
  * @param b Ending delimiter
  */
-void string_strip_delimited(char *str, char a, char b);
+void string_strip_delimited(char* str, char a, char b);
 
 /**
  * Parse a string into a dynamic array of tokens, using the delimiter string.
@@ -126,17 +132,18 @@ void string_strip_delimited(char *str, char a, char b);
  * @param delimiter The character that separates list entries
  * @return The array of tokens owned by the caller. Free with g_strfreev.
  */
-char **string_to_array(const char *string, const char *delimiter);
+char** string_to_array(const char* string, const char* delimiter);
 
 /**
  * Replace tilde and path-specific values with it's equivalents.
  *
- * The string gets invalidated. The new valid representation is the return value.
+ * The string gets invalidated. The new valid representation is the return
+ * value.
  *
  * @param string (nullable) The string to convert to a path.
  * @return The tilde-replaced string.
  */
-char *string_to_path(char *string);
+char* string_to_path(char* string);
 
 /**
  * Convert string to int in a safe way.
@@ -148,17 +155,17 @@ char *string_to_path(char *string);
  * @param[in] str The string to parse
  * @return a bool if the conversion succeeded
  */
-bool safe_string_to_int(int *in, const char *str);
+bool safe_string_to_int(int* in, const char* str);
 
 /**
  * Same as safe_string_to_int, but then for a long
  */
-bool safe_string_to_long_long(long long *in, const char *str);
+bool safe_string_to_long_long(long long* in, const char* str);
 
 /**
  * Same as safe_string_to_int, but then for a double
  */
-bool safe_string_to_double(double *in, const char *str);
+bool safe_string_to_double(double* in, const char* str);
 
 /**
  * Convert time units (ms, s, m) to the internal `gint64` microseconds format
@@ -167,7 +174,7 @@ bool safe_string_to_double(double *in, const char *str);
  *
  * @param string The string to parse the time format from.
  */
-gint64 string_to_time(const char *string);
+gint64 string_to_time(const char* string);
 
 /**
  * Get the current monotonic time. In contrast to `g_get_monotonic_time`,
@@ -188,14 +195,14 @@ gint64 time_now(void);
 /**
  * Get the modification time of the file at @p path
  */
-gint64 modification_time(const char *path);
+gint64 modification_time(const char* path);
 
 /**
  * Retrieve the HOME directory of the user running dunst
  *
  * @return A string of the current home directory
  */
-const char *user_get_home(void);
+const char* user_get_home(void);
 
 /**
  * Try to set an environment variable safely. If an environment variable with
@@ -225,8 +232,7 @@ bool is_special_section(const char* s);
  */
 bool is_deprecated_section(const char* s);
 
-const char *get_section_deprecation_message(const char *s);
-
+const char* get_section_deprecation_message(const char* s);
 
 /**
  * Strips a string of it's brackets if the first and last character are a
@@ -235,13 +241,12 @@ const char *get_section_deprecation_message(const char *s);
  * @param s String to strip
  * @return Newly allocated string without the brackets, or NULL.
  */
-char *string_strip_brackets(const char* s);
-
+char* string_strip_brackets(const char* s);
 
 /**
  * Returns the length of a string array, -1 if the input is NULL.
  */
-int string_array_length(char **s);
+int string_array_length(char** s);
 
 /**
  * Check if file is readable.
@@ -260,7 +265,7 @@ int string_array_length(char **s);
  * @retval true in case of success.
  * @retval false in case of failure, errno will be set appropriately.
  */
-bool is_readable_file(const char * const path);
+bool is_readable_file(const char* const path);
 
 /**
  * Open files verbosely.
@@ -272,7 +277,7 @@ bool is_readable_file(const char * const path);
  * @retval NULL if the fopen() call failed or @p path does not satisfy the
  * conditions of is_readable_file().
  */
-FILE *fopen_verbose(const char * const path);
+FILE* fopen_verbose(const char* const path);
 
 /**
  * Adds the contents of env_name with subdir to the array, interpreting the
@@ -287,18 +292,19 @@ FILE *fopen_verbose(const char * const path);
  * @param alternative A colon-separated list of paths to use as alternative
  * when the environment variable doesn't exits.
  */
-void add_paths_from_env(GPtrArray *arr, char *env_name, char *subdir, char *alternative);
+void add_paths_from_env(GPtrArray* arr, char* env_name, char* subdir,
+                        char* alternative);
 
 /**
  * Check if string contains digits
  */
-bool string_is_int(const char *str);
+bool string_is_int(const char* str);
 
 /**
  * Check if the strings looks like a path.
  * It works by checking if the first characters are any of:
  * @verbatim ./ ../ ~ / @endverbatim
  */
-bool is_like_path(const char *string);
+bool is_like_path(const char* string);
 
 #endif
