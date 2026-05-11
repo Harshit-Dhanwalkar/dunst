@@ -50,6 +50,7 @@ struct notification_colors {
   struct color bg;
   struct color fg;
   struct gradient *highlight;
+  struct color progress_bar;
 };
 
 struct notification {

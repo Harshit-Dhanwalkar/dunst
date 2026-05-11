@@ -888,10 +888,16 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width,
     cairo_fill(c);
 
     // top layer (fill)
-    cairo_matrix_t matrix;
-    cairo_matrix_init_scale(&matrix, 1.0 / progress_width_scaled, 1.0);
-    cairo_pattern_set_matrix(COLOR(cl, highlight->pattern), &matrix);
-    cairo_set_source(c, COLOR(cl, highlight->pattern));
+    if (COLOR_VALID(cl->n->colors.progress_bar)) {
+      cairo_set_source_rgba(
+          c, cl->n->colors.progress_bar.r, cl->n->colors.progress_bar.g,
+          cl->n->colors.progress_bar.b, cl->n->colors.progress_bar.a);
+    } else {
+      cairo_matrix_t matrix;
+      cairo_matrix_init_scale(&matrix, 1.0 / progress_width_scaled, 1.0);
+      cairo_pattern_set_matrix(COLOR(cl, highlight->pattern), &matrix);
+      cairo_set_source(c, COLOR(cl, highlight->pattern));
+    }
 
     draw_rounded_rect(c, x_bar_1, frame_y, progress_width_1, progress_height,
                       settings.progress_bar_corner_radius, scale,
@@ -1056,8 +1062,10 @@ void draw(void) {
       double bar_x = dim.x * scale;
       double bar_y = notif_y * scale;
 
-      // Styling - red bar that shrinks as notification times out
-      cairo_set_source_rgba(c_bar, 1.0, 0.2, 0.2, 1.0);   // Red
+      // Styling
+      struct color prog_color = n->colors.progress_bar;
+      cairo_set_source_rgba(c_bar, prog_color.r, prog_color.g, prog_color.b,
+                            prog_color.a);
       cairo_rectangle(c_bar, bar_x, bar_y, bar_width, 4); // 4px bar at top
       cairo_fill(c_bar);
 

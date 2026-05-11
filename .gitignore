@@ -20,3 +20,5 @@ vgcore.*
 /dunst.systemd.service
 /org.knopwob.dunst.service
 /test/test
+
+compile_commands.json
