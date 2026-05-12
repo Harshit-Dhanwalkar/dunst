@@ -10,14 +10,13 @@
 #ifndef DUNST_OUTPUT_H
 #define DUNST_OUTPUT_H
 
-#include <cairo.h>
-#include <glib.h>
 #include <stdbool.h>
+#include <glib.h>
+#include <cairo.h>
 
 typedef gpointer window;
 
-struct dimensions
-{
+struct dimensions {
         int x;
         int y;
         int w;
@@ -28,9 +27,8 @@ struct dimensions
         int corner_radius;
 };
 
-struct screen_info
-{
-        char* name;
+struct screen_info {
+        char *name;
         int id;
         int x;
         int y;
@@ -40,8 +38,7 @@ struct screen_info
         int dpi;
 };
 
-struct output
-{
+struct output {
         bool (*init)(void);
         void (*deinit)(void);
 
@@ -51,8 +48,7 @@ struct output
         void (*win_show)(window);
         void (*win_hide)(window);
 
-        void (*display_surface)(cairo_surface_t* srf, window win,
-                                const struct dimensions*);
+        void (*display_surface)(cairo_surface_t *srf, window win, const struct dimensions*);
 
         cairo_t* (*win_get_context)(window);
 

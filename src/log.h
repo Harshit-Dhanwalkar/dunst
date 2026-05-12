@@ -30,8 +30,7 @@
  * compiling with '-std=gnu11', this should be fine.
  */
 #if __GNUC__ >= 8 || __clang_major__ >= 6
-#define MSG(format, ...) \
-        "[%16s:%04d] " format, __func__, __LINE__, ##__VA_ARGS__
+#define MSG(format, ...) "[%16s:%04d] " format, __func__, __LINE__, ## __VA_ARGS__
 #endif
 
 #ifdef MSG
@@ -49,19 +48,13 @@
 #define LOG_M g_message
 #define LOG_I g_info
 
-#define DIE(...)                    \
-        do                          \
-        {                           \
-                LOG_C(__VA_ARGS__); \
-                exit(EXIT_FAILURE); \
-        } while (0)
+#define DIE(...) do { LOG_C(__VA_ARGS__); exit(EXIT_FAILURE); } while (0)
 
 // Unified fopen() result messages
 #define MSG_FOPEN_SUCCESS(path, fp) "Opened '%s' (fd: '%d')", path, fileno(fp)
 #define MSG_FOPEN_FAILURE(path) "Cannot open '%s': %s", path, strerror(errno)
 
-enum log_mask
-{
+enum log_mask {
         DUNST_LOG_NONE,
         DUNST_LOG_ALL,
         DUNST_LOG_AUTO,

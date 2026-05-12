@@ -6,10 +6,9 @@
  * @license BSD-3-Clause
  */
 
-#include "log.h"
-
 #include <glib.h>
 
+#include "log.h"
 #include "utils.h"
 
 // NOTE: Keep updated with the dunst manual
@@ -17,30 +16,22 @@ static GLogLevelFlags log_level = G_LOG_LEVEL_MESSAGE;
 
 static enum log_mask log_mask = DUNST_LOG_AUTO;
 
-static const char* log_level_to_string(GLogLevelFlags level)
+static const char *log_level_to_string(GLogLevelFlags level)
 {
-        switch (level)
-        {
-                case G_LOG_LEVEL_ERROR:
-                        return "ERROR";
-                case G_LOG_LEVEL_CRITICAL:
-                        return "CRITICAL";
-                case G_LOG_LEVEL_WARNING:
-                        return "WARNING";
-                case G_LOG_LEVEL_MESSAGE:
-                        return "MESSAGE";
-                case G_LOG_LEVEL_INFO:
-                        return "INFO";
-                case G_LOG_LEVEL_DEBUG:
-                        return "DEBUG";
-                default:
-                        return "UNKNOWN";
+        switch (level) {
+                case G_LOG_LEVEL_ERROR: return "ERROR";
+                case G_LOG_LEVEL_CRITICAL: return "CRITICAL";
+                case G_LOG_LEVEL_WARNING: return "WARNING";
+                case G_LOG_LEVEL_MESSAGE: return "MESSAGE";
+                case G_LOG_LEVEL_INFO: return "INFO";
+                case G_LOG_LEVEL_DEBUG: return "DEBUG";
+                default: return "UNKNOWN";
         }
 }
 
-void log_set_level_from_string(const char* level)
+void log_set_level_from_string(const char *level)
 {
-        ASSERT_OR_RET(level, );
+        ASSERT_OR_RET(level,);
 
         if (STR_CASEQ(level, "critical"))
                 log_level = G_LOG_LEVEL_CRITICAL;
@@ -64,9 +55,15 @@ void log_set_level_from_string(const char* level)
                 LOG_W("Unknown log level: '%s'", level);
 }
 
-GLogLevelFlags log_get_level(void) { return log_level; }
+GLogLevelFlags log_get_level(void)
+{
+        return log_level;
+}
 
-void log_set_level(GLogLevelFlags level) { log_level = level; }
+void log_set_level(GLogLevelFlags level)
+{
+        log_level = level;
+}
 
 /**
  * Log handling function for GLib's logging wrapper
@@ -76,9 +73,11 @@ void log_set_level(GLogLevelFlags level) { log_level = level; }
  * @param message Used only by GLib
  * @param ignore
  */
-static void dunst_log_handler(const gchar* log_domain,
-                              GLogLevelFlags message_level,
-                              const gchar* message, gpointer ignore)
+static void dunst_log_handler(
+                const gchar    *log_domain,
+                GLogLevelFlags message_level,
+                const gchar    *message,
+                gpointer       ignore)
 {
         (void)log_domain;
 
@@ -88,7 +87,8 @@ static void dunst_log_handler(const gchar* log_domain,
             (log_mask == DUNST_LOG_AUTO && log_level < message_level_masked))
                 return;
 
-        const char* log_level_str = log_level_to_string(message_level_masked);
+        const char *log_level_str =
+                log_level_to_string(message_level_masked);
 
         /* Use stderr for warnings and higher */
         if (message_level_masked <= G_LOG_LEVEL_WARNING)

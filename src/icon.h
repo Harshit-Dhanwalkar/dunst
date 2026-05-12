@@ -15,24 +15,22 @@
 
 #include "notification.h"
 
-cairo_surface_t* gdk_pixbuf_to_cairo_surface(GdkPixbuf* pixbuf);
+cairo_surface_t *gdk_pixbuf_to_cairo_surface(GdkPixbuf *pixbuf);
 
 /** Retrieve an icon by its full filepath, scaled according to settings.
  *
  * @param filename A string representing a readable file path
  * @param id   (necessary) A unique identifier of the returned pixbuf.
  *             Only filled, if the return value is non-NULL.
- * @param min_size An iteger representing the desired minimum unscaled icon
- * size.
- * @param max_size An iteger representing the desired maximum unscaled icon
- * size.
+ * @param min_size An iteger representing the desired minimum unscaled icon size.
+ * @param max_size An iteger representing the desired maximum unscaled icon size.
  * @param scale An integer representing the output dpi scaling.
  *
  * @return an instance of `GdkPixbuf`
  * @retval NULL when file does not exist, not readable, etc..
  */
-GdkPixbuf* get_pixbuf_from_file(const char* filename, char** id, int min_size,
-                                int max_size, double scale);
+GdkPixbuf *get_pixbuf_from_file(const char *filename, char **id, int min_size, int max_size, double scale);
+
 
 /**
  * Get the unscaled icon width.
@@ -40,12 +38,12 @@ GdkPixbuf* get_pixbuf_from_file(const char* filename, char** id, int min_size,
  * If scale is 2 for example, the icon will render in twice the size, but
  * get_icon_width still returns the same size as when scale is 1.
  */
-int get_icon_width(cairo_surface_t* icon, double scale);
+int get_icon_width(cairo_surface_t *icon, double scale);
 
 /**
  * Get the unscaled icon height, see get_icon_width.
  */
-int get_icon_height(cairo_surface_t* icon, double scale);
+int get_icon_height(cairo_surface_t *icon, double scale);
 
 /** Retrieve a path from an icon name.
  *
@@ -58,7 +56,7 @@ int get_icon_height(cairo_surface_t* icon, double scale);
  * @return a newly allocated string with the icon path
  * @retval NULL when file does not exist, not readable, etc..
  */
-char* get_path_from_icon_name(const char* iconname, int size);
+char *get_path_from_icon_name(const char *iconname, int size);
 
 /** Convert a GVariant like described in GdkPixbuf, scaled according to settings
  *
@@ -70,14 +68,11 @@ char* get_path_from_icon_name(const char* iconname, int size);
  * @param id   (necessary) A unique identifier of the returned pixbuf.
  *             Only filled, if the return value is non-NULL.
  * @param dpi_scale An integer representing the output dpi scaling.
- * @param min_size An integer representing the desired minimum unscaled icon
- * size.
- * @param max_size An integer representing the desired maximum unscaled icon
- * size.
+ * @param min_size An integer representing the desired minimum unscaled icon size.
+ * @param max_size An integer representing the desired maximum unscaled icon size.
  * @return an instance of `GdkPixbuf` derived from the GVariant
  * @retval NULL when GVariant parameter is NULL, invalid or in wrong format
  */
-GdkPixbuf* icon_get_for_data(GVariant* data, char** id, double dpi_scale,
-                             int min_size, int max_size);
+GdkPixbuf *icon_get_for_data(GVariant *data, char **id, double dpi_scale, int min_size, int max_size);
 
 #endif

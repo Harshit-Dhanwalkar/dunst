@@ -10,13 +10,12 @@
 #ifndef DUNST_DRAW_H
 #define DUNST_DRAW_H
 
-#include <cairo.h>
 #include <stdbool.h>
-
+#include <cairo.h>
 #include "output.h"
 
-extern window win;  // Temporary
-extern const struct output* output;
+extern window win; // Temporary
+extern const struct output *output;
 
 /**
  * Specify which corner to draw in draw_rouned_rect
@@ -26,8 +25,7 @@ extern const struct output* output;
  *  C_BOT_LEFT   0100
  *  C_BOT_RIGHT  1000
  */
-enum corner_pos
-{
+enum corner_pos {
         C_NONE = 0,
         C_TOP_LEFT = 1 << 0,
         C_TOP_RIGHT = 1 << 1,
@@ -47,60 +45,53 @@ enum corner_pos
         _C_LAST = 1 << 5,
 };
 
-struct color
-{
+struct color {
         double r;
         double g;
         double b;
         double a;
 };
 
-#define COLOR_UNINIT {-1, -1, -1, -1}
-#define COLOR_VALID(c)                                                         \
-        ((c).r >= 0 && (c).g >= 0 && (c).b >= 0 && (c).a >= 0 && (c).r <= 1 && \
-         (c).g <= 1 && (c).b <= 1 && (c).a <= 1)
-#define COLOR_SAME(c1, c2) \
-        ((c1).r == (c2).r && (c1).g == (c2).g && (c1).b == (c2).b && (c1).a == (c2).a)
+#define COLOR_UNINIT { -1, -1, -1, -1 }
+#define COLOR_VALID(c) ((c).r >= 0 && (c).g >= 0 && (c).b >= 0 && (c).a >= 0 && (c).r <= 1 && (c).g <= 1 && (c).b <= 1 && (c).a <= 1)
+#define COLOR_SAME(c1, c2) ((c1).r == (c2).r && (c1).g == (c2).g && (c1).b == (c2).b && (c1).a == (c2).a)
 
 /**
  * Stringify a color struct to a RRGGBBAA string.
  * Returns the buffer on success and NULL if the struct is invalid.
  */
-char* color_to_string(struct color c, char buf[10]);
+char *color_to_string(struct color c, char buf[10]);
 
-struct gradient
-{
-        cairo_pattern_t* pattern;
+struct gradient {
+        cairo_pattern_t *pattern;
         size_t length;
         struct color colors[];
 };
 
 #define GRADIENT_VALID(g) ((g) != NULL && (g)->length != 0)
 
-struct gradient* gradient_alloc(size_t length);
+struct gradient *gradient_alloc(size_t length);
 
-struct gradient* gradient_acquire(struct gradient* grad);
+struct gradient *gradient_acquire(struct gradient *grad);
 
-void gradient_release(struct gradient* grad);
+void gradient_release(struct gradient *grad);
 
-void gradient_pattern(struct gradient* grad);
+void gradient_pattern(struct gradient *grad);
 
-char* gradient_to_string(const struct gradient* grad);
+char *gradient_to_string(const struct gradient *grad);
+
 
 void draw_setup(void);
 
 void draw(void);
 
-void draw_rounded_rect(cairo_t* c, float x, float y, int width, int height,
-                       int corner_radius, double scale,
-                       enum corner_pos corners);
+void draw_rounded_rect(cairo_t *c, float x, float y, int width, int height, int corner_radius, double scale, enum corner_pos corners);
 
 // TODO get rid of this function by passing scale to everything that needs it.
 double draw_get_scale(void);
 
 void draw_deinit(void);
 
-void calc_window_pos(const struct screen_info* scr, int width, int height,
-                     int* ret_x, int* ret_y);
+void calc_window_pos(const struct screen_info *scr, int width, int height, int *ret_x, int *ret_y);
 
 #endif

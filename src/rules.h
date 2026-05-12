@@ -17,32 +17,31 @@
 #include "notification.h"
 #include "settings.h"
 
-struct rule
-{
+struct rule {
         // Since there's heavy use of offsets from this class, both in rules.c
         // and in settings_data.h the layout of the class should not be
         // changed, unless it's well considered and tested. See the comments
         // below for what should not be changed.
 
         // This has to be the first member, see struct setting.rule_offset.
-        char* name;
+        char *name;
 
         /* filters */
-        char* appname;  // this has to be the first filter, see rules.c
-        char* summary;
-        char* body;
-        char* icon;
-        char* category;
-        char* stack_tag;
-        char* desktop_entry;
+        char *appname; // this has to be the first filter, see rules.c
+        char *summary;
+        char *body;
+        char *icon;
+        char *category;
+        char *stack_tag;
+        char *desktop_entry;
         int msg_urgency;
         gint64 match_dbus_timeout;
 
         /* modifying */
-        gint64 timeout;  // this has to be the first modifying rule
+        gint64 timeout; // this has to be the first modifying rule
         gint64 override_dbus_timeout;
         enum urgency urgency;
-        char* action_name;
+        char *action_name;
         enum markup_mode markup;
         gint history_ignore;
         gint match_transient;
@@ -56,23 +55,23 @@ struct rule
         int min_icon_size;
         int max_icon_size;
         int override_pause_level;
-        char* new_icon;
-        char* default_icon;
+        char *new_icon;
+        char *default_icon;
         struct color fg;
         struct color bg;
-        struct gradient* highlight;
+        struct gradient *highlight;
+        struct color timeout_bar;
         struct color fc;
-        struct color progress_bar;
-        char* set_category;
-        char* format;
-        char* script;
+        char *set_category;
+        char *format;
+        char *script;
         enum behavior_fullscreen fullscreen;
         bool enabled;
         int progress_bar_alignment;
-        char* set_stack_tag;  // this has to be the last modifying rule
+        char *set_stack_tag; // this has to be the last modifying rule
 };
 
-extern GSList* rules;
+extern GSList *rules;
 
 /**
  * Allocate a new rule with given name. The rule is fully initialised. If the
@@ -84,21 +83,21 @@ extern GSList* rules;
  *
  * @return A new initialised rule.
  */
-struct rule* rule_new(const char* name);
+struct rule *rule_new(const char *name);
 
-void rule_free(struct rule* r);
+void rule_free(struct rule *r);
 
-void rule_print(const struct rule* r);
-void rule_apply(struct rule* r, struct notification* n, bool save);
-void rule_apply_all(struct notification* n);
-bool rule_matches_notification(struct rule* r, struct notification* n);
+void rule_print(const struct rule *r);
+void rule_apply(struct rule *r, struct notification *n, bool save);
+void rule_apply_all(struct notification *n);
+bool rule_matches_notification(struct rule *r, struct notification *n);
 
 /**
  * Get rule with this name from rules
  *
  * @return the rule that matches. Null if no rule matches
  */
-struct rule* get_rule(const char* name);
+struct rule *get_rule(const char* name);
 
 /**
  * Check if a rule is an action

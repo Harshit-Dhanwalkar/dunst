@@ -35,4 +35,7 @@
  * Code related to notifications and DBus.
  */
 
-int main(int argc, char* argv[]) { return dunst_main(argc, argv); }
+int main(int argc, char *argv[])
+{
+        return dunst_main(argc, argv);
+}

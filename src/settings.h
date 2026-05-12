@@ -24,9 +24,8 @@
 /**
  * @warning Wayland doesn't support hotkeys
  */
-struct keyboard_shortcut
-{
-        char* str;
+struct keyboard_shortcut {
+        char *str;
 #ifdef ENABLE_X11
         KeyCode code;
         KeySym sym;
@@ -35,60 +34,23 @@ struct keyboard_shortcut
 #endif
 };
 
-#include "draw.h"
 #include "notification.h"
+#include "draw.h"
 
 #define LIST_END (-1)
 
-enum alignment
-{
-        ALIGN_LEFT,
-        ALIGN_CENTER,
-        ALIGN_RIGHT
-};
-enum sort_type
-{
-        SORT_TYPE_ID,
-        SORT_TYPE_URGENCY_ASCENDING,
-        SORT_TYPE_URGENCY_DESCENDING,
-        SORT_TYPE_UPDATE
-};
-enum vertical_alignment
-{
-        VERTICAL_TOP,
-        VERTICAL_CENTER,
-        VERTICAL_BOTTOM
-};
-enum separator_color
-{
-        SEP_FOREGROUND,
-        SEP_AUTO,
-        SEP_FRAME,
-        SEP_CUSTOM
-};
-enum follow_mode
-{
-        FOLLOW_NONE,
-        FOLLOW_MOUSE,
-        FOLLOW_KEYBOARD
-};
-enum mouse_action
-{
-        MOUSE_NONE,
-        MOUSE_DO_ACTION,
-        MOUSE_CLOSE_CURRENT,
-        MOUSE_REMOVE_CURRENT,
-        MOUSE_CLOSE_ALL,
-        MOUSE_CONTEXT,
-        MOUSE_CONTEXT_ALL,
-        MOUSE_OPEN_URL,
-        MOUSE_ACTION_END = LIST_END /* indicates the end of a list of mouse actions */
-};
+enum alignment { ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT };
+enum sort_type { SORT_TYPE_ID, SORT_TYPE_URGENCY_ASCENDING, SORT_TYPE_URGENCY_DESCENDING, SORT_TYPE_UPDATE };
+enum vertical_alignment { VERTICAL_TOP, VERTICAL_CENTER, VERTICAL_BOTTOM };
+enum separator_color { SEP_FOREGROUND, SEP_AUTO, SEP_FRAME, SEP_CUSTOM };
+enum follow_mode { FOLLOW_NONE, FOLLOW_MOUSE, FOLLOW_KEYBOARD };
+enum mouse_action { MOUSE_NONE, MOUSE_DO_ACTION, MOUSE_CLOSE_CURRENT, MOUSE_REMOVE_CURRENT,
+        MOUSE_CLOSE_ALL, MOUSE_CONTEXT, MOUSE_CONTEXT_ALL, MOUSE_OPEN_URL,
+        MOUSE_ACTION_END = LIST_END /* indicates the end of a list of mouse actions */};
 #ifndef ZWLR_LAYER_SHELL_V1_LAYER_ENUM
 #define ZWLR_LAYER_SHELL_V1_LAYER_ENUM
 // Needed for compiling without wayland dependency
-enum zwlr_layer_shell_v1_layer
-{
+enum zwlr_layer_shell_v1_layer {
         ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND = 0,
         ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM = 1,
         ZWLR_LAYER_SHELL_V1_LAYER_TOP = 2,
@@ -98,8 +60,7 @@ enum zwlr_layer_shell_v1_layer
 
 #ifndef ZWLR_LAYER_SURFACE_V1_ANCHOR_ENUM
 #define ZWLR_LAYER_SURFACE_V1_ANCHOR_ENUM
-enum zwlr_layer_surface_v1_anchor
-{
+enum zwlr_layer_surface_v1_anchor {
         /**
          * the top edge of the anchor rectangle
          */
@@ -119,76 +80,53 @@ enum zwlr_layer_surface_v1_anchor
 };
 #endif /* ZWLR_LAYER_SURFACE_V1_ANCHOR_ENUM */
 
-enum origin_values
-{
-        ORIGIN_TOP_LEFT =
-            ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP | ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT,
+enum origin_values {
+        ORIGIN_TOP_LEFT = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP | ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT,
         ORIGIN_TOP_CENTER = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP,
-        ORIGIN_TOP_RIGHT =
-            ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP | ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT,
-        ORIGIN_BOTTOM_LEFT =
-            ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM | ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT,
+        ORIGIN_TOP_RIGHT = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP | ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT,
+        ORIGIN_BOTTOM_LEFT = ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM | ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT,
         ORIGIN_BOTTOM_CENTER = ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM,
-        ORIGIN_BOTTOM_RIGHT =
-            ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM | ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT,
+        ORIGIN_BOTTOM_RIGHT = ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM | ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT,
         ORIGIN_LEFT_CENTER = ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT,
         ORIGIN_RIGHT_CENTER = ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT,
         ORIGIN_CENTER = 0,
 };
 
-// TODO make a TYPE_CMD, instead of using TYPE_PATH for settings like dmenu and
-// browser
-enum setting_type
-{
-        TYPE_MIN = 0,
-        TYPE_INT,
-        TYPE_DOUBLE,
-        TYPE_STRING,
-        TYPE_PATH,
-        TYPE_TIME,
-        TYPE_LIST,
-        TYPE_CUSTOM,
-        TYPE_LENGTH,
-        TYPE_COLOR,
-        TYPE_GRADIENT,
-        TYPE_DEPRECATED,
-        TYPE_MAX = TYPE_DEPRECATED + 1
-};  // to be implemented
+// TODO make a TYPE_CMD, instead of using TYPE_PATH for settings like dmenu and browser
+enum setting_type { TYPE_MIN = 0, TYPE_INT, TYPE_DOUBLE, TYPE_STRING,
+        TYPE_PATH, TYPE_TIME, TYPE_LIST, TYPE_CUSTOM, TYPE_LENGTH, TYPE_COLOR,
+        TYPE_GRADIENT, TYPE_DEPRECATED, TYPE_MAX = TYPE_DEPRECATED + 1 }; // to be implemented
 
-struct separator_color_data
-{
+struct separator_color_data {
         enum separator_color type;
         struct color color;
 };
 
-struct length
-{
+struct length {
         int min;
         int max;
 };
 
-struct position
-{
+struct position {
         int x;
         int y;
 };
 
-struct settings
-{
+struct settings {
         bool print_notifications;
-        bool per_monitor_dpi;  // experimental
+        bool per_monitor_dpi; // experimental
         bool stack_duplicates;
         bool hide_duplicate_count;
-        char* font;
+        char *font;
         struct notification_colors colors_low;
         struct notification_colors colors_norm;
         struct notification_colors colors_crit;
-        char* format;
+        char *format;
         gint64 timeouts[3];
-        char* icons[3];
+        char *icons[3];
         unsigned int transparency;
-        char* title;
-        char* class;
+        char *title;
+        char *class;
         int shrink;
         enum sort_type sort;
         int indicate_hidden;
@@ -209,19 +147,19 @@ struct settings
         int frame_width;
         struct color frame_color;
         int startup_notification;
-        char* monitor;
+        char *monitor;
         int monitor_num;
         double scale;
-        char* dmenu;
-        char** dmenu_cmd;
-        char* browser;
-        char** browser_cmd;
+        char *dmenu;
+        char **dmenu_cmd;
+        char *browser;
+        char **browser_cmd;
         enum vertical_alignment vertical_alignment;
-        char** icon_theme;                  // experimental
-        bool enable_recursive_icon_lookup;  // experimental
+        char **icon_theme; // experimental
+        bool enable_recursive_icon_lookup; // experimental
         bool enable_regex;
-        bool enable_pcre;  // experimental
-        char* icon_path;
+        bool enable_pcre; // experimental
+        char *icon_path;
         enum follow_mode f_mode;
         bool always_run_script;
         struct keyboard_shortcut close_ks;
@@ -231,9 +169,9 @@ struct settings
         bool force_xinerama;
         bool force_xwayland;
         int corner_radius;
-        enum mouse_action* mouse_left_click;
-        enum mouse_action* mouse_middle_click;
-        enum mouse_action* mouse_right_click;
+        enum mouse_action *mouse_left_click;
+        enum mouse_action *mouse_middle_click;
+        enum mouse_action *mouse_right_click;
         int progress_bar_height;
         int progress_bar_min_width;
         int progress_bar_max_width;
@@ -259,8 +197,8 @@ struct settings
 extern struct settings settings;
 extern bool print_notifications;
 
-void load_settings(char** const config_paths);
+void load_settings(char **const config_paths);
 
-void settings_free(struct settings* s);
+void settings_free(struct settings *s);
 
 #endif

@@ -36,14 +36,14 @@ void queues_init(void);
  *
  * @return read only list of notifications
  */
-GList* queues_get_displayed(void);
+GList *queues_get_displayed(void);
 
 /**
  * Recieve the list of all notifications encountered
  *
  * @return read only list of notifications
  */
-GList* queues_get_history(void);
+GList *queues_get_history(void);
 
 /**
  * Get the highest notification in line
@@ -51,7 +51,7 @@ GList* queues_get_history(void);
  * @return the first notification in waiting
  * @retval NULL if waiting is empty
  */
-struct notification* queues_get_head_waiting(void);
+struct notification *queues_get_head_waiting(void);
 
 /**
  * Returns the current amount of notifications,
@@ -85,8 +85,7 @@ unsigned int queues_length_history(void);
  * @return The new value of `n->id`
  * @retval 0 if the notification was dismissed and freed
  */
-int queues_notification_insert(struct notification* n,
-                               struct dunst_status status);
+int queues_notification_insert(struct notification *n, struct dunst_status status);
 
 /**
  * Replace the notification which matches the id field of
@@ -98,7 +97,7 @@ int queues_notification_insert(struct notification* n,
  * @retval true if a matching notification has been found and is replaced
  * @retval false otherwise
  */
-bool queues_notification_replace_id(struct notification* new);
+bool queues_notification_replace_id(struct notification *new);
 
 /**
  * Close the notification that has n->id == id
@@ -120,7 +119,7 @@ void queues_notification_close_id(gint id, enum reason reason);
  * @param n (transfer full) The notification to close
  * @param reason The #reason to close
  */
-void queues_notification_close(struct notification* n, enum reason reason);
+void queues_notification_close(struct notification *n, enum reason reason);
 
 /**
  * Remove the given notification from all queues
@@ -130,7 +129,7 @@ void queues_notification_close(struct notification* n, enum reason reason);
  * @param n (transfer full) The notification to remove
  * @param reason The #reason to remove
  */
-void queues_notification_remove(struct notification* n, enum reason reason);
+void queues_notification_remove(struct notification *n, enum reason reason);
 
 /**
  * Remove the notification that has n->id == id
@@ -169,7 +168,7 @@ void queues_history_pop_by_id(gint id);
  *
  * @param n (transfer full) The notification to push to history
  */
-void queues_history_push(struct notification* n);
+void queues_history_push(struct notification *n);
 
 /**
  * Push all waiting and displayed notifications to history
@@ -209,8 +208,8 @@ void queues_update(struct dunst_status status, gint64 time);
 gint64 queues_get_next_datachange(gint64 time);
 
 /**
- * Get the notification which has the given id in the displayed and waiting
- * queue or NULL if not found
+ * Get the notification which has the given id in the displayed and waiting queue or
+ * NULL if not found
  *
  * @param id the id searched for.
  *
