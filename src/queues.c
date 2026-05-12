@@ -629,44 +629,47 @@ void queues_update(struct dunst_status status, gint64 time)
 gint64 queues_get_next_datachange(gint64 time)
 {
         gint64 wakeup_time = G_MAXINT64;
-        // If there are notifications on screen, wake up in 33ms (30 FPS) to animate the timeout_bar
-        if (displayed->length > 0)
-        {
-                return time + 33333;
-        }
-
+        bool has_timeout_notification = false;
         gint64 next_second = time + S2US(1) - (time % S2US(1));
 
+        // Check for immediate timeouts and see if any non‑sticky notification exists
         for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
                 struct notification *n = iter->data;
                 gint64 timeout_ts = n->start + n->timeout;
 
                 if (n->timeout > 0 && n->locked == 0) {
-                        if (timeout_ts > time)
-                                wakeup_time = MIN(wakeup_time, timeout_ts);
-                        else
-                                // while we're processing or while locked, the notification already timed out
+                        has_timeout_notification = true;
+                        if (timeout_ts <= time) {
+                                // Notification already timed out so immediate wakeup
                                 return time;
+                        }
+                }
+        }
+
+        // If there are notifications on screen, wake up in 33ms (30 FPS) to animate the timeout_bar
+        if (has_timeout_notification) return time + 33333;
+
+        // No animation needed; compute future wakeup for age threshold or future timeouts
+        for (GList *iter = g_queue_peek_head_link(displayed); iter; iter = iter->next) {
+                struct notification *n = iter->data;
+                gint64 timeout_ts = n->start + n->timeout;
+
+                if (n->timeout > 0 && n->locked == 0 && timeout_ts > time) {
+                        wakeup_time = MIN(wakeup_time, timeout_ts);
                 }
 
                 if (settings.show_age_threshold >= 0) {
                         gint64 age = time - n->timestamp;
-
                         if (age > settings.show_age_threshold - S2US(1)) {
-                                /* Notification age should be updated -- sleep
-                                 * until the next turn of second.
-                                 * This ensures that all notifications' ages
-                                 * will change at once, and that at most one
-                                 * update will occur each second for this
-                                 * purpose. */
+                                // Update age at the next second boundary
                                 wakeup_time = MIN(wakeup_time, next_second);
-                        }
-                        else
+                        } else {
                                 wakeup_time = MIN(wakeup_time, n->timestamp + settings.show_age_threshold);
+                        }
                 }
         }
 
-        return wakeup_time != G_MAXINT64 ? wakeup_time : -1;
+        return (wakeup_time != G_MAXINT64) ? wakeup_time : -1;
 }
 
 
