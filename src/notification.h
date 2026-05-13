@@ -128,6 +128,13 @@ struct notification {
         char *msg;            /**< formatted message */
         char *text_to_render; /**< formatted message (with age and action indicators) */
         char *urls;           /**< urllist delimited by '\\n' */
+
+        // TODO: Add documentation
+        /* Live timer fields */
+        gboolean live_timer_active;
+        gint64 live_timer_remaining;
+        gint64 live_timer_update_time;
+        guint live_timer_source_id;
 };
 
 /**
@@ -285,5 +292,11 @@ const char *notification_urgency_to_string(const enum urgency urgency);
 const char *enum_to_string_fullscreen(enum behavior_fullscreen in);
 
 void notification_keep_original(struct notification *n);
+
+
+// TODO: Add documentation
+void notification_start_live_timer(struct notification *n, gint64 initial_ms, gint64 interval_ms);
+void notification_stop_live_timer(struct notification *n);
+void notification_update_live_timer(struct notification *n, gint64 remaining_ms);
 
 #endif

@@ -16,6 +16,8 @@
 #include "dunst.h"
 #include "log.h"
 #include "menu.h"
+#include "notification.h"
+#include "option_parser.h"
 #include "rules.h"
 #include "queues.h"
 #include "settings.h"
@@ -72,6 +74,21 @@ static const char *introspection_xml =
     "            <arg name=\"id\"         type=\"u\"/>"
     "            <arg name=\"reason\"     type=\"u\"/>"
     "        </signal>"
+
+    "        <method name=\"StartLiveTimer\">\n"
+    "          <arg name=\"id\" type=\"u\" direction=\"in\"/>\n"
+    "          <arg name=\"initial_seconds\" type=\"i\" direction=\"in\"/>\n"
+    "          <arg name=\"update_interval_ms\" type=\"i\" direction=\"in\"/>\n"
+    "        </method>\n"
+
+    "        <method name=\"UpdateTimer\">\n"
+    "          <arg name=\"id\" type=\"u\" direction=\"in\"/>\n"
+    "          <arg name=\"remaining_seconds\" type=\"i\" direction=\"in\"/>\n"
+    "        </method>\n"
+
+    "        <method name=\"StopLiveTimer\">\n"
+    "          <arg name=\"id\" type=\"u\" direction=\"in\"/>\n"
+    "        </method>\n"
 
     "        <signal name=\"ActionInvoked\">"
     "            <arg name=\"id\"         type=\"u\"/>"
@@ -208,6 +225,7 @@ void dbus_cb_fdn_methods(GDBusConnection *connection,
         }
 }
 
+DBUS_METHOD(dunst_ConfigReload);
 DBUS_METHOD(dunst_ContextMenuCall);
 DBUS_METHOD(dunst_NotificationAction);
 DBUS_METHOD(dunst_NotificationClearHistory);
@@ -217,10 +235,13 @@ DBUS_METHOD(dunst_NotificationListHistory);
 DBUS_METHOD(dunst_NotificationPopHistory);
 DBUS_METHOD(dunst_NotificationRemoveFromHistory);
 DBUS_METHOD(dunst_NotificationShow);
+DBUS_METHOD(dunst_Ping);
 DBUS_METHOD(dunst_RuleEnable);
 DBUS_METHOD(dunst_RuleList);
-DBUS_METHOD(dunst_ConfigReload);
-DBUS_METHOD(dunst_Ping);
+
+DBUS_METHOD(dunst_StartLiveTimer);
+DBUS_METHOD(dunst_StopLiveTimer);
+DBUS_METHOD(dunst_UpdateTimer);
 
 // NOTE: Keep the names sorted alphabetically
 static struct dbus_method methods_dunst[] = {
@@ -237,6 +258,9 @@ static struct dbus_method methods_dunst[] = {
         {"Ping",                                dbus_cb_dunst_Ping},
         {"RuleEnable",                          dbus_cb_dunst_RuleEnable},
         {"RuleList",                            dbus_cb_dunst_RuleList},
+        {"StartLiveTimer",                      dbus_cb_dunst_StartLiveTimer},
+        {"StopLiveTimer",                       dbus_cb_dunst_StopLiveTimer},
+        {"UpdateTimer",                         dbus_cb_dunst_UpdateTimer},
 };
 
 void dbus_cb_dunst_methods(GDBusConnection *connection,
@@ -494,6 +518,67 @@ static void gradient_entry(const struct gradient *grad, GVariantDict *dict, cons
         }
 }
 
+static void dbus_cb_dunst_ConfigReload(GDBusConnection *connection,
+                                       const gchar *sender,
+                                       GVariant *parameters,
+                                       GDBusMethodInvocation *invocation)
+{
+        gchar **configs = NULL;
+        g_variant_get(parameters, "(^as)", &configs);
+        reload(configs);
+
+        signal_config_reloaded(configs);
+
+        g_dbus_method_invocation_return_value(invocation, NULL);
+        g_dbus_connection_flush(connection, NULL, NULL, NULL);
+}
+
+
+static void dbus_cb_dunst_RuleEnable(GDBusConnection *connection,
+                                     const gchar *sender,
+                                     GVariant *parameters,
+                                     GDBusMethodInvocation *invocation)
+{
+        // dbus param state: 0 → disable, 1 → enable, 2 → toggle.
+
+        int state = 0;
+        char *name = NULL;
+        g_variant_get(parameters, "(si)", &name, &state);
+
+        LOG_D("CMD: Changing rule \"%s\" enable state to %d", name, state);
+
+        if (state < 0 || state > 2) {
+                g_dbus_method_invocation_return_error(invocation,
+                        G_DBUS_ERROR,
+                        G_DBUS_ERROR_INVALID_ARGS,
+                        "Couldn't understand state %d. It must be 0, 1 or 2",
+                        state);
+                return;
+        }
+
+        struct rule *target_rule = get_rule(name);
+        if (target_rule == NULL) {
+                g_dbus_method_invocation_return_error(invocation,
+                        G_DBUS_ERROR,
+                        G_DBUS_ERROR_INVALID_ARGS,
+                        "There is no rule named \"%s\"",
+                        name);
+                g_free(name);
+                return;
+        }
+        g_free(name);
+
+        if (state == 0)
+                target_rule->enabled = false;
+        else if (state == 1)
+                target_rule->enabled = true;
+        else if (state == 2)
+                target_rule->enabled = !target_rule->enabled;
+
+        g_dbus_method_invocation_return_value(invocation, NULL);
+        g_dbus_connection_flush(connection, NULL, NULL, NULL);
+}
+
 static void dbus_cb_dunst_RuleList(GDBusConnection *connection,
                                    const gchar *sender,
                                    GVariant *parameters,
@@ -617,63 +702,79 @@ static void dbus_cb_dunst_RuleList(GDBusConnection *connection,
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
-static void dbus_cb_dunst_RuleEnable(GDBusConnection *connection,
-                                     const gchar *sender,
-                                     GVariant *parameters,
-                                     GDBusMethodInvocation *invocation)
+static void dbus_cb_dunst_StartLiveTimer(GDBusConnection *connection,
+                                         const gchar *sender,
+                                         GVariant *parameters,
+                                         GDBusMethodInvocation *invocation)
 {
-        // dbus param state: 0 → disable, 1 → enable, 2 → toggle.
+        guint32 id;
+        gint32 initial_seconds, update_interval_ms;
 
-        int state = 0;
-        char *name = NULL;
-        g_variant_get(parameters, "(si)", &name, &state);
+        g_variant_get(parameters, "(uii)", &id, &initial_seconds, &update_interval_ms);
 
-        LOG_D("CMD: Changing rule \"%s\" enable state to %d", name, state);
-
-        if (state < 0 || state > 2) {
+        struct notification *n = queues_get_by_id(id);
+        if (n) {
+                notification_start_live_timer(n, (gint64)initial_seconds * 1000, (gint64)update_interval_ms);
+                g_dbus_method_invocation_return_value(invocation, NULL);
+        } else {
                 g_dbus_method_invocation_return_error(invocation,
                         G_DBUS_ERROR,
                         G_DBUS_ERROR_INVALID_ARGS,
-                        "Couldn't understand state %d. It must be 0, 1 or 2",
-                        state);
-                return;
+                        "Notification %d not found", id);
         }
 
-        struct rule *target_rule = get_rule(name);
-        if (target_rule == NULL) {
-                g_dbus_method_invocation_return_error(invocation,
-                        G_DBUS_ERROR,
-                        G_DBUS_ERROR_INVALID_ARGS,
-                        "There is no rule named \"%s\"",
-                        name);
-                g_free(name);
-                return;
-        }
-        g_free(name);
-
-        if (state == 0)
-                target_rule->enabled = false;
-        else if (state == 1)
-                target_rule->enabled = true;
-        else if (state == 2)
-                target_rule->enabled = !target_rule->enabled;
-
-        g_dbus_method_invocation_return_value(invocation, NULL);
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
-static void dbus_cb_dunst_ConfigReload(GDBusConnection *connection,
-                                       const gchar *sender,
-                                       GVariant *parameters,
-                                       GDBusMethodInvocation *invocation)
+static void dbus_cb_dunst_UpdateTimer(GDBusConnection *connection,
+                                      const gchar *sender,
+                                      GVariant *parameters,
+                                      GDBusMethodInvocation *invocation)
 {
-        gchar **configs = NULL;
-        g_variant_get(parameters, "(^as)", &configs);
-        reload(configs);
+        guint32 id;
+        gint32 remaining_seconds;
 
-        signal_config_reloaded(configs);
+        g_variant_get(parameters, "(ui)", &id, &remaining_seconds);
 
-        g_dbus_method_invocation_return_value(invocation, NULL);
+        struct notification *n = queues_get_by_id(id);
+        if (n && n->live_timer_active) {
+                notification_update_live_timer(n, (gint64)remaining_seconds * 1000);
+                g_dbus_method_invocation_return_value(invocation, NULL);
+        } else if (n) {
+                g_dbus_method_invocation_return_error(invocation,
+                        G_DBUS_ERROR,
+                        G_DBUS_ERROR_FAILED,
+                        "No active timer on notification %d", id);
+        } else {
+                g_dbus_method_invocation_return_error(invocation,
+                        G_DBUS_ERROR,
+                        G_DBUS_ERROR_INVALID_ARGS,
+                        "Notification %d not found", id);
+        }
+
+        g_dbus_connection_flush(connection, NULL, NULL, NULL);
+}
+
+static void dbus_cb_dunst_StopLiveTimer(GDBusConnection *connection,
+                                        const gchar *sender,
+                                        GVariant *parameters,
+                                        GDBusMethodInvocation *invocation)
+{
+        guint32 id;
+
+        g_variant_get(parameters, "(u)", &id);
+
+        struct notification *n = queues_get_by_id(id);
+        if (n) {
+                notification_stop_live_timer(n);
+                g_dbus_method_invocation_return_value(invocation, NULL);
+        } else {
+                g_dbus_method_invocation_return_error(invocation,
+                        G_DBUS_ERROR,
+                        G_DBUS_ERROR_INVALID_ARGS,
+                        "Notification %d not found", id);
+        }
+
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
