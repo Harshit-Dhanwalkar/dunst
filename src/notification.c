@@ -328,9 +328,6 @@ void notification_unref(struct notification *n)
         if (n->icon)
                 cairo_surface_destroy(n->icon);
 
-        if (n->live_timer_active)
-               notification_stop_live_timer(n);
-
         notification_private_free(n->priv);
 
         gradient_release(n->colors.highlight);
@@ -494,11 +491,6 @@ struct notification *notification_create(void)
         n->default_action_name = g_strdup("default");
 
         n->script_count = 0;
-
-        n->live_timer_active = FALSE;
-        n->live_timer_remaining = 0;
-        n->live_timer_update_time = 0;
-        n->live_timer_source_id = 0;
 
         return n;
 }
@@ -833,63 +825,4 @@ void notification_keep_original(struct notification *n)
         n->original = g_malloc0(sizeof(struct rule));
         *n->original = empty_rule;
         n->original->name = g_strdup("original");
-}
-
-static gboolean live_timer_callback(gpointer user_data) {
-    struct notification *n = (struct notification *)user_data;
-
-    if (!n->live_timer_active) {
-        return FALSE;
-    }
-
-    gint64 now = time_monotonic_now();
-    gint64 elapsed = now - n->live_timer_update_time;
-
-    n->live_timer_remaining -= elapsed;
-    n->live_timer_update_time = now;
-
-    if (n->live_timer_remaining <= 0) {
-        notification_stop_live_timer(n);
-        queues_notification_close(n, REASON_TIME);
-        return FALSE;
-    }
-
-    // Request redraw
-    wake_up();
-
-    return TRUE;
-}
-
-void notification_start_live_timer(struct notification *n, gint64 initial_ms, gint64 interval_ms) {
-    if (!n) return;
-
-    notification_stop_live_timer(n);
-
-    n->live_timer_active = TRUE;
-    n->live_timer_remaining = initial_ms;
-    n->live_timer_update_time = time_monotonic_now();
-    n->live_timer_source_id = g_timeout_add(interval_ms, live_timer_callback, n);
-
-    wake_up();
-}
-
-void notification_stop_live_timer(struct notification *n) {
-    if (!n || !n->live_timer_active) return;
-
-    n->live_timer_active = FALSE;
-    if (n->live_timer_source_id) {
-        g_source_remove(n->live_timer_source_id);
-        n->live_timer_source_id = 0;
-    }
-
-    wake_up();
-}
-
-void notification_update_live_timer(struct notification *n, gint64 remaining_ms) {
-    if (!n || !n->live_timer_active) return;
-
-    n->live_timer_remaining = remaining_ms;
-    n->live_timer_update_time = time_monotonic_now();
-
-    wake_up();
 }

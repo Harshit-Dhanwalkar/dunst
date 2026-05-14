@@ -94,8 +94,4 @@ void draw_deinit(void);
 
 void calc_window_pos(const struct screen_info *scr, int width, int height, int *ret_x, int *ret_y);
 
-// void notification_start_live_timer(struct notification *n, gint64 initial_ms, gint64 interval_ms);
-// void notification_stop_live_timer(struct notification *n);
-// void notification_update_live_timer(struct notification *n, gint64 remaining_ms);
-
 #endif

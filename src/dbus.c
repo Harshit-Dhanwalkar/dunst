@@ -75,21 +75,6 @@ static const char *introspection_xml =
     "            <arg name=\"reason\"     type=\"u\"/>"
     "        </signal>"
 
-    "        <method name=\"StartLiveTimer\">\n"
-    "          <arg name=\"id\" type=\"u\" direction=\"in\"/>\n"
-    "          <arg name=\"initial_seconds\" type=\"i\" direction=\"in\"/>\n"
-    "          <arg name=\"update_interval_ms\" type=\"i\" direction=\"in\"/>\n"
-    "        </method>\n"
-
-    "        <method name=\"UpdateTimer\">\n"
-    "          <arg name=\"id\" type=\"u\" direction=\"in\"/>\n"
-    "          <arg name=\"remaining_seconds\" type=\"i\" direction=\"in\"/>\n"
-    "        </method>\n"
-
-    "        <method name=\"StopLiveTimer\">\n"
-    "          <arg name=\"id\" type=\"u\" direction=\"in\"/>\n"
-    "        </method>\n"
-
     "        <signal name=\"ActionInvoked\">"
     "            <arg name=\"id\"         type=\"u\"/>"
     "            <arg name=\"action_key\" type=\"s\"/>"
@@ -144,7 +129,6 @@ static const char *introspection_xml =
     "        <property name=\"waitingLength\" type=\"u\" access=\"read\">"
     "            <annotation name=\"org.freedesktop.DBus.Property.EmitsChangedSignal\" value=\"true\"/>"
     "        </property>"
-
 
     "        <signal name=\"NotificationHistoryRemoved\">"
     "            <arg name=\"id\"         type=\"u\"/>"
@@ -258,9 +242,6 @@ static struct dbus_method methods_dunst[] = {
         {"Ping",                                dbus_cb_dunst_Ping},
         {"RuleEnable",                          dbus_cb_dunst_RuleEnable},
         {"RuleList",                            dbus_cb_dunst_RuleList},
-        {"StartLiveTimer",                      dbus_cb_dunst_StartLiveTimer},
-        {"StopLiveTimer",                       dbus_cb_dunst_StopLiveTimer},
-        {"UpdateTimer",                         dbus_cb_dunst_UpdateTimer},
 };
 
 void dbus_cb_dunst_methods(GDBusConnection *connection,
@@ -702,81 +683,6 @@ static void dbus_cb_dunst_RuleList(GDBusConnection *connection,
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
-static void dbus_cb_dunst_StartLiveTimer(GDBusConnection *connection,
-                                         const gchar *sender,
-                                         GVariant *parameters,
-                                         GDBusMethodInvocation *invocation)
-{
-        guint32 id;
-        gint32 initial_seconds, update_interval_ms;
-
-        g_variant_get(parameters, "(uii)", &id, &initial_seconds, &update_interval_ms);
-
-        struct notification *n = queues_get_by_id(id);
-        if (n) {
-                notification_start_live_timer(n, (gint64)initial_seconds * 1000, (gint64)update_interval_ms);
-                g_dbus_method_invocation_return_value(invocation, NULL);
-        } else {
-                g_dbus_method_invocation_return_error(invocation,
-                        G_DBUS_ERROR,
-                        G_DBUS_ERROR_INVALID_ARGS,
-                        "Notification %d not found", id);
-        }
-
-        g_dbus_connection_flush(connection, NULL, NULL, NULL);
-}
-
-static void dbus_cb_dunst_UpdateTimer(GDBusConnection *connection,
-                                      const gchar *sender,
-                                      GVariant *parameters,
-                                      GDBusMethodInvocation *invocation)
-{
-        guint32 id;
-        gint32 remaining_seconds;
-
-        g_variant_get(parameters, "(ui)", &id, &remaining_seconds);
-
-        struct notification *n = queues_get_by_id(id);
-        if (n && n->live_timer_active) {
-                notification_update_live_timer(n, (gint64)remaining_seconds * 1000);
-                g_dbus_method_invocation_return_value(invocation, NULL);
-        } else if (n) {
-                g_dbus_method_invocation_return_error(invocation,
-                        G_DBUS_ERROR,
-                        G_DBUS_ERROR_FAILED,
-                        "No active timer on notification %d", id);
-        } else {
-                g_dbus_method_invocation_return_error(invocation,
-                        G_DBUS_ERROR,
-                        G_DBUS_ERROR_INVALID_ARGS,
-                        "Notification %d not found", id);
-        }
-
-        g_dbus_connection_flush(connection, NULL, NULL, NULL);
-}
-
-static void dbus_cb_dunst_StopLiveTimer(GDBusConnection *connection,
-                                        const gchar *sender,
-                                        GVariant *parameters,
-                                        GDBusMethodInvocation *invocation)
-{
-        guint32 id;
-
-        g_variant_get(parameters, "(u)", &id);
-
-        struct notification *n = queues_get_by_id(id);
-        if (n) {
-                notification_stop_live_timer(n);
-                g_dbus_method_invocation_return_value(invocation, NULL);
-        } else {
-                g_dbus_method_invocation_return_error(invocation,
-                        G_DBUS_ERROR,
-                        G_DBUS_ERROR_INVALID_ARGS,
-                        "Notification %d not found", id);
-        }
-
-        g_dbus_connection_flush(connection, NULL, NULL, NULL);
-}
 
 /* Just a simple Ping command to give the ability to dunstctl to test for the existence of this interface
  * Any other way requires parsing the XML of the Introspection or other foo. Just calling the Ping on an old dunst version will fail. */
@@ -850,6 +756,11 @@ static struct notification *dbus_message_to_notification(const gchar *sender, GV
         g_variant_iter_next(&i, "^a&s", &actions);
         g_variant_iter_next(&i, "@a{?*}", &hints);
         g_variant_iter_next(&i, "i", &timeout);
+
+        /* If notification replaces an existing one, ignore new timeout */
+        if (n->id != 0) {
+                timeout = -1;
+        }
 
         gsize num = 0;
         while (actions[num]) {

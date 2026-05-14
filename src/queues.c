@@ -259,9 +259,14 @@ static bool queues_stack_duplicate(struct notification *new)
                                 new->dup_count = old->dup_count;
                                 signal_notification_closed(old, 1);
 
+                                /* Preserve timeout_bar state */
+                                new->start = old->start;
+                                new->timeout = old->timeout;
+                                new->colors.timeout_bar = old->colors.timeout_bar;
+
                                 /* Run script if the duplicate notification is already displayed */
                                 if (allqueues[i] == displayed) {
-                                        new->start = time_monotonic_now();
+                                        // new->start = time_monotonic_now();
                                         notification_run_script(new);
                                 }
 
@@ -291,6 +296,11 @@ static bool queues_stack_by_tag(struct notification *new)
                                 iter->data = new;
                                 new->dup_count = old->dup_count;
 
+                                /* Preserve timeout bar state */
+                                new->start = old->start;
+                                new->timeout = old->timeout;
+                                new->colors.timeout_bar = old->colors.timeout_bar;
+
                                 bool replace = false;
 
                                 // Transfer old icon when new:
@@ -313,7 +323,7 @@ static bool queues_stack_by_tag(struct notification *new)
 
                                 /* Run script if the stacked notification is already displayed */
                                 if (allqueues[i] == displayed) {
-                                        new->start = time_monotonic_now();
+                                        // new->start = time_monotonic_now();
                                         notification_run_script(new);
                                 }
 
@@ -332,16 +342,19 @@ bool queues_notification_replace_id(struct notification *new)
 {
         GQueue *allqueues[] = { displayed, waiting };
         for (size_t i = 0; i < sizeof(allqueues)/sizeof(GQueue*); i++) {
-                for (GList *iter = g_queue_peek_head_link(allqueues[i]);
-                            iter;
-                            iter = iter->next) {
+                for (GList *iter = g_queue_peek_head_link(allqueues[i]); iter; iter = iter->next) {
                         struct notification *old = iter->data;
                         if (old->id == new->id) {
                                 iter->data = new;
                                 new->dup_count = old->dup_count;
 
+                                /* Preserve timeout_bar state */
+                                new->start = old->start;
+                                new->timeout = old->timeout;
+                                new->colors.timeout_bar = old->colors.timeout_bar;
+
                                 if (allqueues[i] == displayed) {
-                                        new->start = time_monotonic_now();
+                                        // new->start = time_monotonic_now();
                                         notification_run_script(new);
                                 }
 
