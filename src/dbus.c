@@ -223,10 +223,6 @@ DBUS_METHOD(dunst_Ping);
 DBUS_METHOD(dunst_RuleEnable);
 DBUS_METHOD(dunst_RuleList);
 
-DBUS_METHOD(dunst_StartLiveTimer);
-DBUS_METHOD(dunst_StopLiveTimer);
-DBUS_METHOD(dunst_UpdateTimer);
-
 // NOTE: Keep the names sorted alphabetically
 static struct dbus_method methods_dunst[] = {
         {"ConfigReload",                        dbus_cb_dunst_ConfigReload},
