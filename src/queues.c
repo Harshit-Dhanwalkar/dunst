@@ -675,6 +675,12 @@ gint64 queues_get_next_datachange(gint64 time)
                         gint64 age = time - n->timestamp;
                         if (age > settings.show_age_threshold - S2US(1)) {
                                 // Update age at the next second boundary
+                                 /* Notification age should be updated -- sleep
+                                 * until the next turn of second.
+                                 * This ensures that all notifications' ages
+                                 * will change at once, and that at most one
+                                 * update will occur each second for this
+                                 * purpose. */
                                 wakeup_time = MIN(wakeup_time, next_second);
                         } else {
                                 wakeup_time = MIN(wakeup_time, n->timestamp + settings.show_age_threshold);
