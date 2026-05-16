@@ -337,6 +337,13 @@
     mouse_middle_click = do_action, close_current
     mouse_right_click = close_all
 
+    ### Timeout_bar
+
+    enable_timeout_bar = true # bool
+    timeout_bar_style = top_bottom # top or top_bottom or full
+    timeout_bar_height = 6 # int
+
+
 # Experimental features that may or may not work correctly. Do not expect them
 # to have a consistent behaviour across releases.
 [experimental]
@@ -384,7 +391,8 @@
     override_pause_level = 60
     # Icon for notifications with critical urgency
     default_icon = dialog-warning
-    timeout_bar_color =  "#bf616a"
+    # timeout_bar_color =  "#bf616a"
+    timeout_bar_color = "#ff000080"
 
 # Every section that isn't one of the above is interpreted as a rules to
 # override settings for certain messages.

@@ -1070,38 +1070,53 @@ void draw(void)
                 struct notification* n = cl_this->n;
                 int notif_y = dim.y;
                 int notif_width = dim.w;
+                int notif_height = n->displayed_height;
 
                 dim = layout_render(image_surface, cl_this, cl_next, dim, corners);
 
-                // Draw progress bar at the saved notification position
-                if (n && n->timeout > 0 && n->start > 0)
+                // Draw timeout bar if enabled and applicable
+                if (settings.enable_timeout_bar && n && n->timeout > 0 && n->start > 0) {
                 {
                         cairo_t* c_bar = cairo_create(image_surface);
 
                         gint64 now = time_monotonic_now();
-                        gint64 elapsed = now - n->start;
+                        gint64 elapsed = now - n->start;   // TODO: replace with n->bar_start later
 
                         // Calculate progress (0.0 to 1.0)
                         double progress = (double)elapsed / (double)n->timeout;
 
-                        if (progress > 1.0)
-                                progress = 1.0;
-                        if (progress < 0.0)
-                                progress = 0.0;
-
-                        // Scale the progress bar width and position for the scaled surface
-                        double bar_width = notif_width * (1.0 - progress) * scale;
-                        double bar_x = dim.x * scale;
-                        double bar_y = notif_y * scale;
+                        if (progress > 1.0) progress = 1.0;
+                        if (progress < 0.0) progress = 0.0;
 
                         // Styling
-                        struct color timeout_bar_color = n->colors.timeout_bar;
-                        cairo_set_source_rgba(c_bar, timeout_bar_color.r, timeout_bar_color.g, timeout_bar_color.b,
-                                              timeout_bar_color.a);
-                        cairo_rectangle(c_bar, bar_x, bar_y, bar_width, 4);  // 4px bar at top
-                        cairo_fill(c_bar);
+                        // Scale the timeout bar width and position for the scaled surface
+                        double bar_width = notif_width * (1.0 - progress) * scale;
+                        double bar_x = dim.x * scale;
+                        // double bar_y = notif_y * scale;
+                        int bar_height = settings.timeout_bar_height;
+                        struct color bar_color = n->colors.timeout_bar;
 
+                        cairo_set_source_rgba(c_bar, bar_color.r, bar_color.g, bar_color.b, bar_color.a);
+
+                        switch (settings.timeout_bar_style) {
+                                case TIMEOUT_BAR_TOP:
+                                       cairo_rectangle(c_bar, bar_x, notif_y * scale, bar_width, bar_height);
+                                       break;
+                                case TIMEOUT_BAR_TOP_BOTTOM:
+                                       cairo_rectangle(c_bar, bar_x, notif_y * scale, bar_width, bar_height);
+                                       cairo_rectangle(c_bar, bar_x, (notif_y + notif_height - bar_height) * scale,
+                                               bar_width, bar_height);
+                                       break;
+                                case TIMEOUT_BAR_FULL:
+                                    // fill whole notification context background
+                                       cairo_rectangle(c_bar, bar_x, notif_y * scale,
+                                               bar_width, notif_height * scale);
+                                       break;
+                        }
+
+                        cairo_fill(c_bar);
                         cairo_destroy(c_bar);
+                        }
                 }
 
                 corners &= ~(C_TOP | _C_FIRST);

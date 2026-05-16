@@ -376,6 +376,13 @@ static const struct string_to_enum_def corners_enum_data[] = {
         ENUM_END,
 };
 
+static const struct string_to_enum_def timeout_bar_style_enum_data[] = {
+        {"top",         TIMEOUT_BAR_TOP},
+        {"top_bottom",  TIMEOUT_BAR_TOP_BOTTOM},
+        {"full",        TIMEOUT_BAR_FULL},
+        ENUM_END,
+};
+
 static const struct setting allowed_settings[] = {
         // These icon settings have to be above the icon rule
         {
@@ -1438,6 +1445,36 @@ static const struct setting allowed_settings[] = {
                 .value = &settings.colors_low.highlight,
                 .parser = NULL,
                 .parser_data = NULL,
+        },
+        {
+            .name = "enable_timeout_bar",
+            .section = "global",
+            .description = "Show the timeout bar",
+            .type = TYPE_CUSTOM,
+            .default_value = "true",
+            .value = &settings.enable_timeout_bar,
+            .parser = string_parse_bool,
+            .parser_data = boolean_enum_data,
+        },
+        {
+            .name = "timeout_bar_style",
+            .section = "global",
+            .description = "Style of timeout bar: top, top_bottom, full",
+            .type = TYPE_CUSTOM,
+            .default_value = "top",
+            .value = &settings.timeout_bar_style,
+            .parser = string_parse_enum,
+            .parser_data = timeout_bar_style_enum_data,
+        },
+        {
+            .name = "timeout_bar_height",
+            .section = "global",
+            .description = "Height (in px) for timeout_bar", // only for top, top_bottom styles
+            .type = TYPE_INT,
+            .default_value = "4",
+            .value = &settings.timeout_bar_height,
+            .parser = NULL,
+            .parser_data = NULL,
         },
         {
                 .name = "timeout_bar_color",
