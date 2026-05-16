@@ -964,6 +964,100 @@ static struct dimensions layout_render(cairo_surface_t *srf,
         cairo_surface_t *content = render_background(srf, cl, cl_next, dim.y, dim.w, bg_height, dim.corner_radius, corners, &bg_width, scale);
         cairo_t *c = cairo_create(content);
 
+        // Draw timeout bar if enabled and applicable
+        // if (settings.enable_timeout_bar && n && n->timeout > 0 && n->start > 0) {
+        // {
+        //         cairo_t* c_bar = cairo_create(image_surface);
+        //
+        //         gint64 now = time_monotonic_now();
+        //         gint64 elapsed = now - n->start;   // TODO: replace with n->bar_start later
+        //
+        //         // calculate progress (0.0 to 1.0)
+        //         double progress = (double)elapsed / (double)n->timeout;
+        //
+        //         if (progress > 1.0) progress = 1.0;
+        //         if (progress < 0.0) progress = 0.0;
+        //
+        //         // Styling
+        //         // Scale the timeout bar width and position for the scaled surface
+        //         double bar_width = notif_width * (1.0 - progress) * scale;
+        //         double bar_x = dim.x * scale;
+        //         // double bar_y = notif_y * scale;
+        //         int bar_height = settings.timeout_bar_height;
+        //         struct color bar_color = n->colors.timeout_bar;
+        //
+        //         cairo_set_source_rgba(c_bar, bar_color.r, bar_color.g, bar_color.b, bar_color.a);
+        //
+        //         switch (settings.timeout_bar_style) {
+        //                 case TIMEOUT_BAR_TOP:
+        //                        cairo_rectangle(c_bar, bar_x, notif_y * scale, bar_width, bar_height);
+        //                        break;
+        //                 case TIMEOUT_BAR_TOP_BOTTOM:
+        //                        cairo_rectangle(c_bar, bar_x, notif_y * scale, bar_width, bar_height);
+        //                        cairo_rectangle(c_bar, bar_x, (notif_y + notif_height - bar_height) * scale,
+        //                                bar_width, bar_height);
+        //                        break;
+        //                 case TIMEOUT_BAR_FULL:
+        //                     // fill whole notification context background
+        //                        cairo_rectangle(c_bar, bar_x, notif_y * scale,
+        //                                bar_width, notif_height * scale);
+        //                        break;
+        //         }
+        //
+        //         cairo_fill(c_bar);
+        //         cairo_destroy(c_bar);
+        //         }
+        // }
+        // Draw timeout bar (if enabled) behind the content
+        if (settings.enable_timeout_bar && cl->n && cl->n->timeout > 0 && cl->n->start > 0) {
+                gint64 now = time_monotonic_now();
+                gint64 elapsed = now - cl->n->start;   // TODO: use cl->n->bar_start later
+
+                // calculate progress (0.0 to 1.0)
+                double progress = (double)elapsed / (double)cl->n->timeout;
+                if (progress > 1.0) progress = 1.0;
+                if (progress < 0.0) progress = 0.0;
+
+                // Dimensions of the notification content area (without frame)
+                int notif_x = dim.x;   // already offset by frame
+                int notif_y = dim.y;
+                int notif_width = dim.w;
+                int notif_height = bg_height;   // bg_height is the inner height
+                double bar_width = notif_width * (1.0 - progress) * scale;
+                double bar_x = notif_x * scale;   // or use x from dim? dim.x is the window x, not content x.
+                // Actually, the content area starts at (frame_width, frame_width) from the window.
+                // But `dim.x` is the window's x, and we are drawing on the content surface `c` which is already offset.
+                // The content surface `c` has its origin at the top-left of the content area.
+                // So we should use (0,0) as the top-left of the content area.
+                // However, the bar should span the whole content width and be placed at the top (or bottom).
+                // For simplicity, we can use `0` for x and `0` for y relative to the content surface.
+                // But we also have the notif_y for the window; we need to position within the content surface.
+                // Since we are drawing on the content surface, coordinates are relative to the content area.
+                // So `x` = 0, `y` = 0 (for top bar) or `y = bg_height - bar_height` (for bottom bar).
+                // For `full`, it should fill the whole content area (x=0, y=0, width=bg_width, height=bg_height).
+
+                // However, the content surface `c` already has the background drawn, but we are about to draw
+                // the bar on top of it, then `render_content` will draw text on top. That's correct: bar behind text.
+
+                int bar_height = settings.timeout_bar_height;
+                struct color bar_color = cl->n->colors.timeout_bar;
+                cairo_set_source_rgba(c, bar_color.r, bar_color.g, bar_color.b, bar_color.a);
+
+                switch (settings.timeout_bar_style) {
+                        case TIMEOUT_BAR_TOP:
+                                cairo_rectangle(c, 0, 0, bar_width, bar_height);
+                                break;
+                        case TIMEOUT_BAR_TOP_BOTTOM:
+                                cairo_rectangle(c, 0, 0, bar_width, bar_height);
+                                cairo_rectangle(c, 0, bg_height - bar_height, bar_width, bar_height);
+                                break;
+                        case TIMEOUT_BAR_FULL:
+                                cairo_rectangle(c, 0, 0, bar_width, bg_height);
+                                break;
+                }
+                cairo_fill(c);
+        }
+
         render_content(c, cl, bg_width, bg_height, scale);
 
         /* adding frame */
@@ -1073,51 +1167,6 @@ void draw(void)
                 int notif_height = n->displayed_height;
 
                 dim = layout_render(image_surface, cl_this, cl_next, dim, corners);
-
-                // Draw timeout bar if enabled and applicable
-                if (settings.enable_timeout_bar && n && n->timeout > 0 && n->start > 0) {
-                {
-                        cairo_t* c_bar = cairo_create(image_surface);
-
-                        gint64 now = time_monotonic_now();
-                        gint64 elapsed = now - n->start;   // TODO: replace with n->bar_start later
-
-                        // Calculate progress (0.0 to 1.0)
-                        double progress = (double)elapsed / (double)n->timeout;
-
-                        if (progress > 1.0) progress = 1.0;
-                        if (progress < 0.0) progress = 0.0;
-
-                        // Styling
-                        // Scale the timeout bar width and position for the scaled surface
-                        double bar_width = notif_width * (1.0 - progress) * scale;
-                        double bar_x = dim.x * scale;
-                        // double bar_y = notif_y * scale;
-                        int bar_height = settings.timeout_bar_height;
-                        struct color bar_color = n->colors.timeout_bar;
-
-                        cairo_set_source_rgba(c_bar, bar_color.r, bar_color.g, bar_color.b, bar_color.a);
-
-                        switch (settings.timeout_bar_style) {
-                                case TIMEOUT_BAR_TOP:
-                                       cairo_rectangle(c_bar, bar_x, notif_y * scale, bar_width, bar_height);
-                                       break;
-                                case TIMEOUT_BAR_TOP_BOTTOM:
-                                       cairo_rectangle(c_bar, bar_x, notif_y * scale, bar_width, bar_height);
-                                       cairo_rectangle(c_bar, bar_x, (notif_y + notif_height - bar_height) * scale,
-                                               bar_width, bar_height);
-                                       break;
-                                case TIMEOUT_BAR_FULL:
-                                    // fill whole notification context background
-                                       cairo_rectangle(c_bar, bar_x, notif_y * scale,
-                                               bar_width, notif_height * scale);
-                                       break;
-                        }
-
-                        cairo_fill(c_bar);
-                        cairo_destroy(c_bar);
-                        }
-                }
 
                 corners &= ~(C_TOP | _C_FIRST);
         }
