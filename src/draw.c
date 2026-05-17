@@ -994,17 +994,17 @@ static struct dimensions layout_render(cairo_surface_t *srf,
                                 cairo_rectangle(c, 0, 0, bar_width, bar_height);
                                 cairo_rectangle(c, 0, bg_height - bar_height, bar_width, bar_height);
                                 break;
-                        case TIMEOUT_BAR_LEFT_SPAN:
-                                cairo_rectangle(c, 0, 0, bar_width, bg_height);
-                                break;
-                        case TIMEOUT_BAR_UP:
+                        case TIMEOUT_BAR_UP_SPAN:
                             bar_height = notif_height * (1.0 - progress);
                             cairo_rectangle(c, 0, 0, notif_width, bar_height);
                             break;
-                        case TIMEOUT_BAR_DOWN:
+                        case TIMEOUT_BAR_DOWN_SPAN:
                             bar_height = notif_height * (1.0 - progress);
                             cairo_rectangle(c, 0, notif_height - bar_height, notif_width, bar_height);
                             break;
+                        case TIMEOUT_BAR_LEFT_SPAN:
+                                cairo_rectangle(c, 0, 0, bar_width, bg_height);
+                                break;
                 }
                 cairo_fill(c);
         }

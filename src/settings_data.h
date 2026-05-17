@@ -377,11 +377,11 @@ static const struct string_to_enum_def corners_enum_data[] = {
 };
 
 static const struct string_to_enum_def timeout_bar_style_enum_data[] = {
-        {"top",         TIMEOUT_BAR_TOP},
-        {"top_bottom",  TIMEOUT_BAR_TOP_BOTTOM},
-        {"left_span",   TIMEOUT_BAR_LEFT_SPAN},
-        {"up",          TIMEOUT_BAR_UP},
-        {"down",        TIMEOUT_BAR_DOWN},
+        { "top",         TIMEOUT_BAR_TOP },
+        { "top_bottom",  TIMEOUT_BAR_TOP_BOTTOM },
+        { "up_span",     TIMEOUT_BAR_UP_SPAN },
+        { "down_span",   TIMEOUT_BAR_DOWN_SPAN },
+        { "left_span",   TIMEOUT_BAR_LEFT_SPAN },
         ENUM_END,
 };
 
