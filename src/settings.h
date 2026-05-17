@@ -112,7 +112,13 @@ struct position {
         int y;
 };
 
-enum timeout_bar_style { TIMEOUT_BAR_TOP, TIMEOUT_BAR_TOP_BOTTOM, TIMEOUT_BAR_FULL };
+enum timeout_bar_style {
+        TIMEOUT_BAR_TOP,
+        TIMEOUT_BAR_TOP_BOTTOM,
+        TIMEOUT_BAR_LEFT_SPAN,
+        TIMEOUT_BAR_UP,
+        TIMEOUT_BAR_DOWN,
+};
 
 struct settings {
         bool print_notifications;
