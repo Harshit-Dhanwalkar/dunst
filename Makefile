@@ -1,10 +1,6 @@
 # dunst - Notification-daemon
 # See LICENSE file for copyright and license details.
 
-.DELETE_ON_ERROR:
-
-MAKEFLAGS += -j$(shell nproc 2>/dev/null || echo 1)
-
 include config.mk
 
 VERSION := "$(shell ./get-version.sh)"

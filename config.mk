@@ -57,13 +57,9 @@ ifneq (0, ${X11})
 ENABLE_X11= -DENABLE_X11
 endif
 
-# Extra warnings
-WARNINGS := -Wextra -Wpedantic -Wshadow -Wformat=2 -Wconversion -Wsign-conversion -Wnull-dereference -Wdouble-promotion -Wmissing-prototypes -Wstrict-prototypes
-
 # flags
 DEFAULT_CPPFLAGS = -D_DEFAULT_SOURCE -DVERSION=\"${VERSION}\" -DSYSCONFDIR=\"${SYSCONFDIR}\" ${ENABLE_WAYLAND} ${ENABLE_X11}
-# DEFAULT_CFLAGS   = -g -std=gnu11 -pedantic -Wall -Wno-overlength-strings -Wno-expansion-to-defined -Os
-DEFAULT_CFLAGS = -g -std=gnu11 -pedantic -Wall $(WARNINGS) -Wno-overlength-strings -Wno-expansion-to-defined -Os
+DEFAULT_CFLAGS   = -g -std=gnu11 -pedantic -Wall -Wno-overlength-strings -Wno-expansion-to-defined -Os
 DEFAULT_LDFLAGS  = -lm -lrt
 
 CPPFLAGS_DEBUG :=
