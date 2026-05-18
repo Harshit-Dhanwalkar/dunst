@@ -975,12 +975,12 @@ static struct dimensions layout_render(cairo_surface_t *srf,
                 if (progress < 0.0) progress = 0.0;
 
                 // Dimensions of the notification content area (without frame)
-                int notif_x = dim.x;
-                int notif_y = dim.y;
+                // int notif_x = dim.x;
+                // int notif_y = dim.y;
                 int notif_width = dim.w;
                 int notif_height = bg_height;
                 double bar_width = notif_width * (1.0 - progress) * scale;
-                double bar_x = notif_x * scale;
+                // double bar_x = notif_x * scale;
 
                 int bar_height = settings.timeout_bar_height;
                 struct color bar_color = cl->n->colors.timeout_bar;
@@ -1112,10 +1112,10 @@ void draw(void)
                         corners |= (settings.corners & C_BOT) | _C_LAST;
 
                 // Save the notification's position BEFORE layout_render updates dim
-                struct notification* n = cl_this->n;
-                int notif_y = dim.y;
-                int notif_width = dim.w;
-                int notif_height = n->displayed_height;
+                // struct notification* n = cl_this->n;
+                // int notif_y = dim.y;
+                // int notif_width = dim.w;
+                // int notif_height = n->displayed_height;
 
                 dim = layout_render(image_surface, cl_this, cl_next, dim, corners);
 

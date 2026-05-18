@@ -340,7 +340,7 @@
     ### Timeout_bar
 
     enable_timeout_bar = true # bool
-    timeout_bar_style = top # top, top_bottom, left_span, up, down
+    timeout_bar_style = top # top, top_bottom, left_span, up_span, down_span
     timeout_bar_height = 4 # int
 
 
