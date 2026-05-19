@@ -209,7 +209,6 @@ void dbus_cb_fdn_methods(GDBusConnection *connection,
         }
 }
 
-DBUS_METHOD(dunst_ConfigReload);
 DBUS_METHOD(dunst_ContextMenuCall);
 DBUS_METHOD(dunst_NotificationAction);
 DBUS_METHOD(dunst_NotificationClearHistory);
@@ -219,9 +218,10 @@ DBUS_METHOD(dunst_NotificationListHistory);
 DBUS_METHOD(dunst_NotificationPopHistory);
 DBUS_METHOD(dunst_NotificationRemoveFromHistory);
 DBUS_METHOD(dunst_NotificationShow);
-DBUS_METHOD(dunst_Ping);
 DBUS_METHOD(dunst_RuleEnable);
 DBUS_METHOD(dunst_RuleList);
+DBUS_METHOD(dunst_ConfigReload);
+DBUS_METHOD(dunst_Ping);
 
 // NOTE: Keep the names sorted alphabetically
 static struct dbus_method methods_dunst[] = {
@@ -495,67 +495,6 @@ static void gradient_entry(const struct gradient *grad, GVariantDict *dict, cons
         }
 }
 
-static void dbus_cb_dunst_ConfigReload(GDBusConnection *connection,
-                                       const gchar *sender,
-                                       GVariant *parameters,
-                                       GDBusMethodInvocation *invocation)
-{
-        gchar **configs = NULL;
-        g_variant_get(parameters, "(^as)", &configs);
-        reload(configs);
-
-        signal_config_reloaded(configs);
-
-        g_dbus_method_invocation_return_value(invocation, NULL);
-        g_dbus_connection_flush(connection, NULL, NULL, NULL);
-}
-
-
-static void dbus_cb_dunst_RuleEnable(GDBusConnection *connection,
-                                     const gchar *sender,
-                                     GVariant *parameters,
-                                     GDBusMethodInvocation *invocation)
-{
-        // dbus param state: 0 → disable, 1 → enable, 2 → toggle.
-
-        int state = 0;
-        char *name = NULL;
-        g_variant_get(parameters, "(si)", &name, &state);
-
-        LOG_D("CMD: Changing rule \"%s\" enable state to %d", name, state);
-
-        if (state < 0 || state > 2) {
-                g_dbus_method_invocation_return_error(invocation,
-                        G_DBUS_ERROR,
-                        G_DBUS_ERROR_INVALID_ARGS,
-                        "Couldn't understand state %d. It must be 0, 1 or 2",
-                        state);
-                return;
-        }
-
-        struct rule *target_rule = get_rule(name);
-        if (target_rule == NULL) {
-                g_dbus_method_invocation_return_error(invocation,
-                        G_DBUS_ERROR,
-                        G_DBUS_ERROR_INVALID_ARGS,
-                        "There is no rule named \"%s\"",
-                        name);
-                g_free(name);
-                return;
-        }
-        g_free(name);
-
-        if (state == 0)
-                target_rule->enabled = false;
-        else if (state == 1)
-                target_rule->enabled = true;
-        else if (state == 2)
-                target_rule->enabled = !target_rule->enabled;
-
-        g_dbus_method_invocation_return_value(invocation, NULL);
-        g_dbus_connection_flush(connection, NULL, NULL, NULL);
-}
-
 static void dbus_cb_dunst_RuleList(GDBusConnection *connection,
                                    const gchar *sender,
                                    GVariant *parameters,
@@ -676,6 +615,66 @@ static void dbus_cb_dunst_RuleList(GDBusConnection *connection,
         }
 
         g_dbus_method_invocation_return_value(invocation, g_variant_new("(aa{sv})", &builder));
+        g_dbus_connection_flush(connection, NULL, NULL, NULL);
+}
+
+static void dbus_cb_dunst_RuleEnable(GDBusConnection *connection,
+                                     const gchar *sender,
+                                     GVariant *parameters,
+                                     GDBusMethodInvocation *invocation)
+{
+        // dbus param state: 0 → disable, 1 → enable, 2 → toggle.
+
+        int state = 0;
+        char *name = NULL;
+        g_variant_get(parameters, "(si)", &name, &state);
+
+        LOG_D("CMD: Changing rule \"%s\" enable state to %d", name, state);
+
+        if (state < 0 || state > 2) {
+                g_dbus_method_invocation_return_error(invocation,
+                        G_DBUS_ERROR,
+                        G_DBUS_ERROR_INVALID_ARGS,
+                        "Couldn't understand state %d. It must be 0, 1 or 2",
+                        state);
+                return;
+        }
+
+        struct rule *target_rule = get_rule(name);
+        if (target_rule == NULL) {
+                g_dbus_method_invocation_return_error(invocation,
+                        G_DBUS_ERROR,
+                        G_DBUS_ERROR_INVALID_ARGS,
+                        "There is no rule named \"%s\"",
+                        name);
+                g_free(name);
+                return;
+        }
+        g_free(name);
+
+        if (state == 0)
+                target_rule->enabled = false;
+        else if (state == 1)
+                target_rule->enabled = true;
+        else if (state == 2)
+                target_rule->enabled = !target_rule->enabled;
+
+        g_dbus_method_invocation_return_value(invocation, NULL);
+        g_dbus_connection_flush(connection, NULL, NULL, NULL);
+}
+
+static void dbus_cb_dunst_ConfigReload(GDBusConnection *connection,
+                                       const gchar *sender,
+                                       GVariant *parameters,
+                                       GDBusMethodInvocation *invocation)
+{
+        gchar **configs = NULL;
+        g_variant_get(parameters, "(^as)", &configs);
+        reload(configs);
+
+        signal_config_reloaded(configs);
+
+        g_dbus_method_invocation_return_value(invocation, NULL);
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 

@@ -1101,10 +1101,9 @@ void draw(void)
                                                                     round(dim.h * scale));
 
         enum corner_pos corners = (settings.corners & C_TOP) | _C_FIRST;
-        for (GSList* iter = layouts; iter; iter = iter->next)
-        {
-                struct colored_layout* cl_this = iter->data;
-                struct colored_layout* cl_next = iter->next ? iter->next->data : NULL;
+        for (GSList *iter = layouts; iter; iter = iter->next) {
+                struct colored_layout *cl_this = iter->data;
+                struct colored_layout *cl_next = iter->next ? iter->next->data : NULL;
 
                 if (settings.gap_size)
                         corners = settings.corners;
