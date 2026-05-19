@@ -1102,6 +1102,7 @@ void draw(void)
 
         enum corner_pos corners = (settings.corners & C_TOP) | _C_FIRST;
         for (GSList *iter = layouts; iter; iter = iter->next) {
+
                 struct colored_layout *cl_this = iter->data;
                 struct colored_layout *cl_next = iter->next ? iter->next->data : NULL;
 
@@ -1110,14 +1111,7 @@ void draw(void)
                 else if (!cl_next)
                         corners |= (settings.corners & C_BOT) | _C_LAST;
 
-                // Save the notification's position BEFORE layout_render updates dim
-                // struct notification* n = cl_this->n;
-                // int notif_y = dim.y;
-                // int notif_width = dim.w;
-                // int notif_height = n->displayed_height;
-
                 dim = layout_render(image_surface, cl_this, cl_next, dim, corners);
-
                 corners &= ~(C_TOP | _C_FIRST);
         }
 

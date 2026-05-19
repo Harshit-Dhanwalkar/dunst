@@ -678,7 +678,6 @@ static void dbus_cb_dunst_ConfigReload(GDBusConnection *connection,
         g_dbus_connection_flush(connection, NULL, NULL, NULL);
 }
 
-
 /* Just a simple Ping command to give the ability to dunstctl to test for the existence of this interface
  * Any other way requires parsing the XML of the Introspection or other foo. Just calling the Ping on an old dunst version will fail. */
 static void dbus_cb_dunst_Ping(GDBusConnection *connection,
