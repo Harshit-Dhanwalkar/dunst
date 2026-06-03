@@ -339,9 +339,24 @@
 
     ### Timeout_bar
 
-    enable_timeout_bar = true # bool
-    timeout_bar_style = top # top, top_bottom, left_span, up_span, down_span
-    timeout_bar_height = 4 # int
+    # Show a visual indicator displaying the remaining time for the notification.
+    # When enabled, a bar will be drawn that shrinks as the notification's
+    # timeout approaches.
+    enable_timeout_bar = true
+
+    # Define the position and growth/shrink direction of the timeout bar.
+    # Accepted values:
+    # * top: Draws the bar at the top of the notification.
+    # * bottom: Draws the bar at the bottom of the notification.
+    # * top_bottom: Draws the bar at both the top and bottom.
+    # * left_span: Draws a vertical bar on the left side.
+    # * up_span: Draws a horizontal bar that scales upwards.
+    # * down_span: Draws a horizontal bar that scales downwards.
+    timeout_bar_style = top
+
+    # The thickness (height or width, depending on the style) of the
+    # timeout bar in pixels.
+    timeout_bar_height = 4
 
 
 # Experimental features that may or may not work correctly. Do not expect them
