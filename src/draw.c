@@ -907,28 +907,10 @@ static void render_content(cairo_t *c, struct colored_layout *cl, int width, int
                         settings.progress_bar_corner_radius, scale, settings.progress_bar_corners);
                 cairo_fill(c);
 
-                // top layer (fill)
-                // if (COLOR_VALID(cl->n->colors.timeout_bar))
-                // {
-                //         cairo_set_source_rgba(
-                //             c, cl->n->colors.timeout_bar.r, cl->n->colors.timeout_bar.g,
-                //             cl->n->colors.timeout_bar.b, cl->n->colors.timeout_bar.a);
-                // }
-                // else
-                // {
-                //         cairo_matrix_t matrix;
-                //         cairo_matrix_init_scale(&matrix, 1.0 / timeout_width_scaled, 1.0);
-                //         cairo_pattern_set_matrix(COLOR(cl, highlight->pattern), &matrix);
-                //         cairo_set_source(c, COLOR(cl, highlight->pattern));
-                // }
                 cairo_matrix_t matrix;
                 cairo_matrix_init_scale(&matrix, 1.0 / progress_width_scaled, 1.0);
                 cairo_pattern_set_matrix(COLOR(cl, highlight->pattern), &matrix);
                 cairo_set_source(c, COLOR(cl, highlight->pattern));
-
-                draw_rounded_rect(c, x_bar_1, frame_y, progress_width_1, progress_height,
-                        settings.progress_bar_corner_radius, scale, settings.progress_bar_corners);
-                cairo_fill(c);
 
                 draw_rounded_rect(c, x_bar_1, frame_y, progress_width_1, progress_height,
                         settings.progress_bar_corner_radius, scale, settings.progress_bar_corners);
