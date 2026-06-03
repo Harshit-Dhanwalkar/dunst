@@ -114,6 +114,7 @@ struct position {
 
 enum timeout_bar_style {
         TIMEOUT_BAR_TOP,
+        TIMEOUT_BAR_BOTTOM,
         TIMEOUT_BAR_TOP_BOTTOM,
         TIMEOUT_BAR_UP_SPAN,
         TIMEOUT_BAR_DOWN_SPAN,

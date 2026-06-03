@@ -972,6 +972,9 @@ static struct dimensions layout_render(cairo_surface_t *srf,
                         case TIMEOUT_BAR_TOP:
                                 cairo_rectangle(c, 0, 0, bar_width, bar_height);
                                 break;
+                        case TIMEOUT_BAR_BOTTOM:
+                            cairo_rectangle(c, 0, bg_height - bar_height, bar_width, bar_height);
+                            break;
                         case TIMEOUT_BAR_TOP_BOTTOM:
                                 cairo_rectangle(c, 0, 0, bar_width, bar_height);
                                 cairo_rectangle(c, 0, bg_height - bar_height, bar_width, bar_height);
