@@ -119,6 +119,9 @@ enum timeout_bar_style {
         TIMEOUT_BAR_UP_SPAN,
         TIMEOUT_BAR_DOWN_SPAN,
         TIMEOUT_BAR_LEFT_SPAN,
+        TIMEOUT_BAR_FLOODIN,
+        TIMEOUT_BAR_DRAINOUT,
+        TIMEOUT_BAR_GLOW,
 };
 
 struct settings {

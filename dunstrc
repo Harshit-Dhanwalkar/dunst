@@ -344,14 +344,19 @@
     # timeout approaches.
     enable_timeout_bar = true
 
-    # Define the position and growth/shrink direction of the timeout bar.
+# Define the position, appearance, and animation of the timeout bar.
     # Accepted values:
-    # * top: Draws the bar at the top of the notification.
-    # * bottom: Draws the bar at the bottom of the notification.
-    # * top_bottom: Draws the bar at both the top and bottom.
-    # * left_span: Draws a vertical bar on the left side.
-    # * up_span: Draws a horizontal bar that scales upwards.
-    # * down_span: Draws a horizontal bar that scales downwards.
+    # Geometric styles:
+    # * top: Draws a bar at the top of the notification.
+    # * bottom: Draws a bar at the bottom of the notification.
+    # * top_bottom: Draws a bar at both the top and bottom.
+    # * left_span: Draws a vertical bar on the left side of the notification.
+    # * up_span: Draws a bar that scales upwards.
+    # * down_span: Draws a bar that scales downwards.
+    # Dynamic/Animated styles:
+    # * floodin: An animated wave that fills the notification from the bottom up.
+    # * drainout: An animated wave that drains the notification from top to bottom.
+    # * glow: A solid bar that gains an intense, color-shifting glow as the timeout nears completion.
     timeout_bar_style = top
 
     # The thickness (height or width, depending on the style) of the

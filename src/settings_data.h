@@ -379,9 +379,12 @@ static const struct string_to_enum_def timeout_bar_style_enum_data[] = {
         { "top",         TIMEOUT_BAR_TOP },        // Horizontal bar at the top edge, shrinks horizontally
         { "bottom",      TIMEOUT_BAR_BOTTOM },     // Horizontal bar at the bottom edge, shrinks horizontally
         { "top_bottom",  TIMEOUT_BAR_TOP_BOTTOM }, // Two bars at top and bottom, both shrink horizontally
-        { "up_span",     TIMEOUT_BAR_UP_SPAN },    // Full‑height bar starting at the top, shrinks downward
-        { "down_span",   TIMEOUT_BAR_DOWN_SPAN },  // Full‑height bar starting at the bottom, shrinks upward
-        { "left_span",   TIMEOUT_BAR_LEFT_SPAN },  // Full‑width bar starting at the left, shrinks rightward
+        { "up_span",     TIMEOUT_BAR_UP_SPAN },    // Full-height bar starting at the top, shrinks downward
+        { "down_span",   TIMEOUT_BAR_DOWN_SPAN },  // Full-height bar starting at the bottom, shrinks upward
+        { "left_span",   TIMEOUT_BAR_LEFT_SPAN },  // Full-width bar starting at the left, shrinks rightward
+        { "floodin",     TIMEOUT_BAR_FLOODIN },    // Animated wavy surface rising from bottom to top
+        { "drainout",    TIMEOUT_BAR_DRAINOUT },   // Animated wavy surface falling from top to bottom
+        { "glow",        TIMEOUT_BAR_GLOW },       // Bar with dynamic intensity and color shift as it expires
         ENUM_END,
 };
 

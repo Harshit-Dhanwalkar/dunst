@@ -990,6 +990,61 @@ static struct dimensions layout_render(cairo_surface_t *srf,
                         case TIMEOUT_BAR_LEFT_SPAN:
                                 cairo_rectangle(c, 0, 0, bar_width, bg_height);
                                 break;
+                        case TIMEOUT_BAR_FLOODIN: {
+                                double amplitude = 3.0 * scale;
+                                double frequency = 0.1 / scale;
+                                double phase = progress * 30.0;
+                                // Starts empty (bottom) and rises to the top (0)
+                                double water_level = bg_height * (1.0 - progress) * scale;
+                                cairo_move_to(c, 0, bg_height * scale);
+                                cairo_line_to(c, 0, water_level);
+                                // wavy surface
+                                for (int x = 0; x <= notif_width * scale; x += 2) {
+                                        double wavy_y = water_level + amplitude * sin((x * frequency) + phase);
+                                        cairo_line_to(c, x, wavy_y);
+                                }
+                                cairo_line_to(c, notif_width * scale, bg_height * scale);
+                                cairo_close_path(c);
+                                break;
+                        }
+                        case TIMEOUT_BAR_DRAINOUT: {
+                                double amplitude = 3.0 * scale;
+                                double frequency = 0.1 / scale;
+                                double phase = progress * 30.0;
+                                // Starts full (0) and drops down to the bottom (bg_height)
+                                double water_level = bg_height * progress * scale;
+                                cairo_move_to(c, 0, bg_height * scale);
+                                cairo_line_to(c, 0, water_level);
+                                // wavy surface
+                                for (int x = 0; x <= notif_width * scale; x += 2) {
+                                        double wavy_y = water_level + amplitude * sin((x * frequency) + phase);
+                                        cairo_line_to(c, x, wavy_y);
+                                }
+                                cairo_line_to(c, notif_width * scale, bg_height * scale);
+                                cairo_close_path(c);
+                                break;
+                        }
+                        case TIMEOUT_BAR_GLOW: {
+                                double intensity = progress;
+                                // Color shift
+                                double target_r = 1.0;
+                                double target_g = 0.0;
+                                double target_b = 0.0;
+                                // Linear interpolation b/w base bar color and target color
+                                double current_r = bar_color.r + (target_r - bar_color.r) * intensity;
+                                double current_g = bar_color.g + (target_g - bar_color.g) * intensity;
+                                double current_b = bar_color.b + (target_b - bar_color.b) * intensity;
+                                // Overlapping translucent rectangles to create glow
+                                for (int i = 6; i > 0; i--) {
+                                        // alpha reduced for glow layers, but increased with intensity
+                                        cairo_set_source_rgba(c, current_r, current_g, current_b, bar_color.a * 0.20 * intensity);
+                                        cairo_rectangle(c, 0, 0, bar_width, bar_height + (i * 5 * scale));
+                                        cairo_fill(c);
+                                }
+                                cairo_set_source_rgba(c, current_r, current_g, current_b, bar_color.a);
+                                cairo_rectangle(c, 0, 0, bar_width, bar_height);
+                                break;
+                        }
                 }
                 cairo_fill(c);
         }
